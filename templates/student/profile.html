@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Student Profile & ID | CampusPulse{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 1.5rem auto;">
+    
+    <!-- Student ID Card Badge Header -->
+    <div style="background: var(--paper-card); border: 2px solid var(--card-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-bottom: 1.5rem; position: relative;">
+        <div class="paper-clip"></div>
+
+        <div style="display: flex; gap: 1.2rem; align-items: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--ink-pen-blue); color: #fff; font-size: 1.8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+                {{ student.name[0] }}
+            </div>
+            <div>
+                <span class="rubber-stamp stamp-verified" style="font-size: 0.7rem; margin-bottom: 4px;">STUDENT IDENTIFICATION</span>
+                <h1 style="font-size: 1.45rem; font-weight: 800; color: var(--ink-black); margin-top: 2px;">{{ student.name }}</h1>
+                <p style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--ink-pen-blue); font-weight: 700;">
+                    ID: {{ student.roll_number }} • {{ student.email }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Notebook Form -->
+    <div class="notebook-form" style="border: 1px solid var(--card-border);">
+        <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 1.2rem; color: var(--ink-black); display: flex; align-items: center; gap: 0.5rem;">
+            <span>✍️</span> Update Student Information
+        </h2>
+
+        <form method="POST" action="{{ url_for('student_profile') }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-input" value="{{ student.name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-input" value="{{ student.phone }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <input type="text" name="department" class="form-input" value="{{ student.department }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Year of Study</label>
+                    <select name="year_of_study" class="form-select" required>
+                        <option value="1st Year" {% if student.year_of_study == '1st Year' %}selected{% endif %}>1st Year</option>
+                        <option value="2nd Year" {% if student.year_of_study == '2nd Year' %}selected{% endif %}>2nd Year</option>
+                        <option value="3rd Year" {% if student.year_of_study == '3rd Year' %}selected{% endif %}>3rd Year</option>
+                        <option value="4th Year" {% if student.year_of_study == '4th Year' %}selected{% endif %}>4th Year</option>
+                        <option value="Postgraduate" {% if student.year_of_study == 'Postgraduate' %}selected{% endif %}>Postgraduate</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2; padding-top: 1rem; border-top: 1px dashed var(--card-border);">
+                    <label class="form-label">New Password (Leave blank to keep unchanged)</label>
+                    <input type="password" name="new_password" class="form-input" placeholder="Enter new password...">
+                </div>
+            </div>
+
+            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; margin-top: 0.5rem;">
+                ✓ Save Updated Profile
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

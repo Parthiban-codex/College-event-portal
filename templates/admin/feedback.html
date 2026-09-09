@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Event Reviews & Ratings | Organizer Desk{% endblock %}
+
+{% block content %}
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">⭐</span>
+            Student Reviews & Feedback Ledger
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Ratings, attendee feedback & student suggestions</p>
+    </div>
+
+    {% if stats and stats.avg_rating %}
+        <div>
+            <span class="rubber-stamp stamp-pending" style="font-size: 0.85rem;">
+                ⭐ {{ "%.1f"|format(stats.avg_rating) }} / 5.0 ({{ stats.total_feedback }} Reviews)
+            </span>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Desk Navigation Divider Tabs -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
+    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">⭐ Reviews</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+</div>
+
+<!-- Event Filter Shelf -->
+<div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1.2rem; margin-bottom: 1.8rem;">
+    <form action="{{ url_for('admin_feedback') }}" method="GET" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <select name="event_id" class="form-select" style="flex: 3; min-width: 250px;" onchange="this.form.submit()">
+            <option value="">-- All Events Feedback --</option>
+            {% for ev in events %}
+                <option value="{{ ev.id }}" {% if selected_event_id == ev.id %}selected{% endif %}>{{ ev.title }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="tactile-btn tactile-btn-primary" style="flex: 1;">
+            Filter Reviews
+        </button>
+    </form>
+</div>
+
+<!-- Reviews Ledger List -->
+<div>
+    {% if feedbacks %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for f in feedbacks %}
+                <div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1.4rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <strong style="font-size: 1.05rem; color: var(--ink-black);">{{ f.student_name }}</strong>
+                            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-pen-blue); margin-left: 6px;">
+                                ({{ f.roll_number }} • {{ f.department }})
+                            </span>
+                            <span class="card-tag" style="position: static; margin-left: 8px;">{{ f.event_title }}</span>
+                        </div>
+                        <div style="color: #f59e0b; font-size: 1.1rem;">
+                            {{ '⭐' * f.rating }}
+                        </div>
+                    </div>
+
+                    <p style="color: var(--ink-black); line-height: 1.5; font-size: 0.95rem; margin-bottom: 0.6rem;">
+                        {{ f.comments or 'No written comments provided.' }}
+                    </p>
+
+                    <small style="font-family: var(--font-mono); color: var(--ink-pencil); font-size: 0.75rem;">
+                        Submitted on {{ f.created_at|datetimeformat('%b %d, %Y - %I:%M %p') if f.created_at else '' }}
+                    </small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem 1rem; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+            <p style="font-size: 2.5rem; margin-bottom: 0.5rem;">⭐</p>
+            <h3 style="font-weight: 800; margin-bottom: 0.4rem;">No Reviews Recorded</h3>
+            <p style="color: var(--ink-pencil);">Student reviews and ratings will appear here after event check-ins.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

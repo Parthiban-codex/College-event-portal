@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Organizer Dashboard | CampusPulse{% endblock %}
+
+{% block content %}
+<!-- Organizer Header -->
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">🛠️</span>
+            Organizer Dashboard
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Event operations, gate check-in, revenue tracking & student attendance</p>
+    </div>
+
+    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <a href="{{ url_for('admin_scanner') }}" class="tactile-btn tactile-btn-primary" style="background: #d97706; border-color: #b45309;">
+            📷 Live QR Gate Scanner
+        </a>
+        <a href="{{ url_for('admin_create_event') }}" class="tactile-btn tactile-btn-primary">
+            + Draft New Event
+        </a>
+    </div>
+</div>
+
+<!-- Desk Navigation Divider Tabs -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">
+        📊 Overview
+    </a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn">
+        📋 Manage Events
+    </a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">
+        💳 Verify Payments
+    </a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">
+        📷 QR Scanner
+    </a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">
+        👥 Participants & CSV
+    </a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">
+        📢 Announcements
+    </a>
+    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">
+        ⭐ Reviews
+    </a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">
+        🏛️ Campus Venues
+    </a>
+</div>
+
+<!-- 4 Key Metrics (Desk Sticky Notes) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2.2rem;">
+    <div class="sticky-note sticky-yellow" style="transform: rotate(-1deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">Published Events</p>
+        <p style="font-size: 2.4rem; font-weight: 900; color: #713f12; margin: 4px 0;">{{ stats.total_events }}</p>
+        <small class="hand-note" style="color: #a16207;">Active on campus</small>
+    </div>
+
+    <div class="sticky-note sticky-mint" style="transform: rotate(1deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #166534;">Passes Issued</p>
+        <p style="font-size: 2.4rem; font-weight: 900; color: #14532d; margin: 4px 0;">{{ stats.total_registrations }}</p>
+        <small class="hand-note" style="color: #15803d;">Total registrations</small>
+    </div>
+
+    <div class="sticky-note sticky-rose" style="transform: rotate(-0.5deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #9f1239;">Gate Check-ins</p>
+        <p style="font-size: 2.4rem; font-weight: 900; color: #881337; margin: 4px 0;">{{ stats.total_attended }}</p>
+        <small class="hand-note" style="color: #be123c;">Attended attendees</small>
+    </div>
+
+    <div class="sticky-note sticky-yellow" style="transform: rotate(1.5deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">Revenue Collected</p>
+        <p style="font-size: 2.4rem; font-weight: 900; color: #713f12; margin: 4px 0;">₹{{ "%.0f"|format(stats.total_revenue) }}</p>
+        <small class="hand-note" style="color: #a16207;">Via UPI verification</small>
+    </div>
+</div>
+
+<!-- Quick Event Overview Ledger -->
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black);">
+            📋 Active Events & Capacity Ledger
+        </h2>
+        <a href="{{ url_for('admin_events') }}" class="hand-note" style="font-size: 1.2rem; color: var(--ink-pen-blue);">Manage All Events ➔</a>
+    </div>
+
+    <div class="ledger-table-container">
+        <table class="ledger-table">
+            <thead>
+                <tr>
+                    <th>Event Title</th>
+                    <th>Category</th>
+                    <th>Date & Time</th>
+                    <th>Venue</th>
+                    <th>Enrolled / Seats</th>
+                    <th>Fee</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if events %}
+                    {% for e in events %}
+                        <tr>
+                            <td>
+                                <strong>{{ e.title }}</strong>
+                            </td>
+                            <td><span class="card-tag" style="position: static;">{{ e.category }}</span></td>
+                            <td style="font-family: var(--font-mono); font-size: 0.85rem;">
+                                {{ e.event_date|datetimeformat('%b %d, %Y') }}
+                            </td>
+                            <td>{{ e.venue_name or 'Main Ground' }}</td>
+                            <td>
+                                <strong>{{ e.registered_count or 0 }}</strong> / {{ e.capacity }}
+                            </td>
+                            <td>
+                                {% if e.fee == 0 %}
+                                    <span class="fee-free">FREE</span>
+                                {% else %}
+                                    <strong>₹{{ "%.0f"|format(e.fee) }}</strong>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_edit_event', event_id=e.id) }}" class="tactile-btn" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">
+                                    Edit ✏️
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--ink-pencil); padding: 2rem;">
+                            No events scheduled yet. <a href="{{ url_for('admin_create_event') }}" style="color: var(--ink-pen-blue); font-weight: 700;">Draft one now</a>.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

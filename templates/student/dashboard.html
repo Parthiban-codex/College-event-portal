@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}My Event Passes | CampusPulse{% endblock %}
+
+{% block content %}
+<!-- Student Header -->
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">🎫</span>
+            My Event Passes
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Registered passes, attendance stamps & earned certificates</p>
+    </div>
+
+    <div style="display: flex; gap: 0.8rem;">
+        <a href="{{ url_for('index') }}" class="tactile-btn tactile-btn-primary">
+            + Register For New Event
+        </a>
+    </div>
+</div>
+
+<!-- Student Identity Ledger Card -->
+<div style="background: var(--paper-card); border: 1.5px solid var(--card-border); border-radius: var(--radius-md); padding: 1.4rem 1.8rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 1.2rem;">
+        <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--ink-pen-blue); color: #fff; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(37,99,235,0.3);">
+            {{ session.get('name', 'S')[0] }}
+        </div>
+        <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black); margin-bottom: 2px;">{{ session.get('name') }}</h2>
+            <div style="font-size: 0.85rem; color: var(--ink-pencil);">
+                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--ink-pen-blue);">{{ session.get('roll_number') }}</span> • {{ session.get('department') }}
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <a href="{{ url_for('student_profile') }}" class="tactile-btn" style="font-size: 0.85rem; padding: 0.45rem 0.9rem;">
+            ⚙️ Profile Settings
+        </a>
+    </div>
+</div>
+
+<!-- 4 Quick Stats Sticky Notes -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div class="sticky-note sticky-yellow" style="transform: rotate(-1deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">All Passes</p>
+        <p style="font-size: 2rem; font-weight: 900; color: #713f12; margin: 4px 0;">{{ stats.total }}</p>
+        <small class="hand-note" style="color: #a16207;">Total booked</small>
+    </div>
+
+    <div class="sticky-note sticky-mint" style="transform: rotate(1deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #166534;">Upcoming</p>
+        <p style="font-size: 2rem; font-weight: 900; color: #14532d; margin: 4px 0;">{{ stats.upcoming }}</p>
+        <small class="hand-note" style="color: #15803d;">Active tickets</small>
+    </div>
+
+    <div class="sticky-note sticky-rose" style="transform: rotate(-0.5deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #9f1239;">Attended</p>
+        <p style="font-size: 2rem; font-weight: 900; color: #881337; margin: 4px 0;">{{ stats.attended }}</p>
+        <small class="hand-note" style="color: #be123c;">Verified attendance</small>
+    </div>
+
+    <div class="sticky-note sticky-yellow" style="transform: rotate(1.5deg);">
+        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">Pending Verif.</p>
+        <p style="font-size: 2rem; font-weight: 900; color: #713f12; margin: 4px 0;">{{ stats.pending }}</p>
+        <small class="hand-note" style="color: #a16207;">Awaiting review</small>
+    </div>
+</div>
+
+<!-- My Enrolled Passes Grid -->
+<div>
+    <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1.2rem;">
+        🎟️ My Reserved Event Passes
+    </h2>
+
+    {% if registrations %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            {% for r in registrations %}
+                <div style="background: var(--paper-card); border: 2px solid var(--ticket-edge); border-radius: var(--radius-md); padding: 1.4rem; position: relative; box-shadow: 0 8px 18px rgba(0,0,0,0.06);">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;">
+                        <span class="ticket-code-badge" style="font-size: 0.85rem;">{{ r.ticket_code }}</span>
+                        
+                        {% if r.status == 'attended' %}
+                            <span class="rubber-stamp stamp-attended" style="font-size: 0.7rem;">ATTENDED</span>
+                        {% elif r.status == 'approved' or r.payment_status == 'free' or r.payment_status == 'verified' %}
+                            <span class="rubber-stamp stamp-verified" style="font-size: 0.7rem;">ADMIT ONE</span>
+                        {% elif r.payment_status == 'pending' %}
+                            <span class="rubber-stamp stamp-pending" style="font-size: 0.7rem;">PENDING</span>
+                        {% else %}
+                            <span class="rubber-stamp stamp-rejected" style="font-size: 0.7rem;">REJECTED</span>
+                        {% endif %}
+                    </div>
+
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-bottom: 0.6rem; line-height: 1.3;">
+                        {{ r.event_title }}
+                    </h3>
+
+                    <div style="font-size: 0.85rem; color: var(--ink-pencil); margin-bottom: 1rem; line-height: 1.4;">
+                        <div>📅 {{ r.event_date|datetimeformat('%a, %b %d, %Y') }} • ⏰ {{ r.start_time|timeformat }}</div>
+                        <div>📍 {{ r.venue_name or 'Main College Ground' }}</div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; pt-2; border-top: 1px dashed var(--card-border); padding-top: 0.8rem;">
+                        <a href="{{ url_for('view_ticket', registration_id=r.id) }}" class="tactile-btn tactile-btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.45rem 0.8rem;">
+                            View Pass ➔
+                        </a>
+
+                        {% if r.status == 'attended' %}
+                            <a href="{{ url_for('view_certificate', registration_id=r.id) }}" class="tactile-btn tactile-btn-success" style="font-size: 0.85rem; padding: 0.45rem 0.8rem;">
+                                🏆 Certificate
+                            </a>
+                        {% endif %}
+
+                        {% if r.status != 'attended' %}
+                            <form action="{{ url_for('unregister_event', registration_id=r.id) }}" method="POST" onsubmit="return confirm('Cancel this event pass?');" style="margin: 0;">
+                                <button type="submit" class="tactile-btn tactile-btn-danger" style="font-size: 0.85rem; padding: 0.45rem 0.8rem;">
+                                    Cancel
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3.5rem 1rem; background: var(--paper-card); border-radius: var(--radius-md); border: 2px dashed var(--card-border);">
+            <p style="font-size: 2.5rem; margin-bottom: 0.5rem;">📓</p>
+            <h3 style="font-weight: 800; margin-bottom: 0.5rem;">No Passes in your Notebook Yet</h3>
+            <p style="color: var(--ink-pencil); margin-bottom: 1.5rem;">Explore upcoming hackathons, workshops, and fests to claim your digital QR passes.</p>
+            <a href="{{ url_for('index') }}" class="tactile-btn tactile-btn-primary">Browse Campus Events ➔</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

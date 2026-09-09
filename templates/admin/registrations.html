@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Verification & Registrations | Organizer Desk{% endblock %}
+
+{% block content %}
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">💳</span>
+            Pass Registrations & UPI Ledger
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Verify student UPI reference IDs, check payment receipts, and issue passes</p>
+    </div>
+
+    <div>
+        <a href="{{ url_for('admin_scanner') }}" class="tactile-btn tactile-btn-primary" style="background: #d97706; border-color: #b45309;">
+            📷 QR Gate Scanner
+        </a>
+    </div>
+</div>
+
+<!-- Desk Navigation Divider Tabs -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
+    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+</div>
+
+<!-- Filter Shelf -->
+<div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1.2rem; margin-bottom: 1.8rem;">
+    <form action="{{ url_for('admin_registrations') }}" method="GET" style="display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;">
+        <select name="event_id" class="form-select" style="flex: 2; min-width: 200px;">
+            <option value="">All Events</option>
+            {% for ev in events %}
+                <option value="{{ ev.id }}" {% if selected_event_id == ev.id %}selected{% endif %}>{{ ev.title }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="payment_status" class="form-select" style="flex: 1; min-width: 160px;">
+            <option value="all" {% if selected_payment_status == 'all' %}selected{% endif %}>All Payments</option>
+            <option value="pending" {% if selected_payment_status == 'pending' %}selected{% endif %}>⏳ Pending Verification</option>
+            <option value="verified" {% if selected_payment_status == 'verified' %}selected{% endif %}>✓ Verified Paid</option>
+            <option value="free" {% if selected_payment_status == 'free' %}selected{% endif %}>🟢 Free Entry</option>
+            <option value="rejected" {% if selected_payment_status == 'rejected' %}selected{% endif %}>❌ Rejected</option>
+        </select>
+
+        <button type="submit" class="tactile-btn tactile-btn-primary">
+            Filter Ledger
+        </button>
+    </form>
+</div>
+
+<!-- Registrations Ledger Table -->
+<div class="ledger-table-container">
+    <table class="ledger-table">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Event</th>
+                <th>Ticket Code</th>
+                <th>Fee & Payment Status</th>
+                <th>UPI Reference ID</th>
+                <th>Receipt</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if registrations %}
+                {% for r in registrations %}
+                    <tr>
+                        <td>
+                            <strong>{{ r.student_name }}</strong>
+                            <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-pen-blue);">
+                                {{ r.roll_number }} • {{ r.department }}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-weight: 700;">{{ r.event_title }}</span>
+                        </td>
+                        <td>
+                            <code class="ticket-code-badge" style="font-size: 0.78rem;">{{ r.ticket_code }}</code>
+                        </td>
+                        <td>
+                            <div>
+                                {% if r.event_fee == 0 %}
+                                    <span class="fee-free">FREE</span>
+                                {% else %}
+                                    <strong>₹{{ "%.0f"|format(r.event_fee) }}</strong>
+                                {% endif %}
+                            </div>
+                            <div style="margin-top: 2px;">
+                                {% if r.payment_status == 'verified' %}
+                                    <span class="rubber-stamp stamp-verified" style="font-size: 0.65rem;">PAID</span>
+                                {% elif r.payment_status == 'pending' %}
+                                    <span class="rubber-stamp stamp-pending" style="font-size: 0.65rem;">PENDING</span>
+                                {% elif r.payment_status == 'rejected' %}
+                                    <span class="rubber-stamp stamp-rejected" style="font-size: 0.65rem;">REJECTED</span>
+                                {% else %}
+                                    <span class="rubber-stamp stamp-verified" style="font-size: 0.65rem;">FREE</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if r.payment_ref_no %}
+                                <code style="font-family: var(--font-mono); font-weight: 700; color: var(--ink-pen-blue); font-size: 0.85rem;">{{ r.payment_ref_no }}</code>
+                            {% else %}
+                                <span style="color: var(--ink-pencil); font-size: 0.8rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.payment_screenshot %}
+                                <a href="{{ url_for('static', filename='uploads/receipts/' + r.payment_screenshot) }}" target="_blank" class="tactile-btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+                                    🖼️ Receipt
+                                </a>
+                            {% else %}
+                                <span style="color: var(--ink-pencil); font-size: 0.8rem;">None</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.status == 'attended' %}
+                                <span class="rubber-stamp stamp-attended" style="font-size: 0.65rem;">ATTENDED</span>
+                            {% elif r.status == 'approved' %}
+                                <span class="rubber-stamp stamp-verified" style="font-size: 0.65rem;">APPROVED</span>
+                            {% elif r.status == 'rejected' %}
+                                <span class="rubber-stamp stamp-rejected" style="font-size: 0.65rem;">REJECTED</span>
+                            {% else %}
+                                <span class="rubber-stamp stamp-pending" style="font-size: 0.65rem;">REGISTERED</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            {% if r.payment_status == 'pending' or r.status == 'registered' %}
+                                <div style="display: inline-flex; gap: 0.4rem;">
+                                    <form action="{{ url_for('admin_verify_payment', registration_id=r.id, action='approve') }}" method="POST" style="margin: 0;">
+                                        <button type="submit" class="tactile-btn tactile-btn-success" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
+                                            ✓ Approve
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('admin_verify_payment', registration_id=r.id, action='reject') }}" method="POST" style="margin: 0;">
+                                        <button type="submit" class="tactile-btn tactile-btn-danger" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
+                                            ✕ Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <span style="color: var(--ink-pencil); font-size: 0.8rem;">Done</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--ink-pencil); padding: 2rem;">
+                        No registrations matching this filter.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

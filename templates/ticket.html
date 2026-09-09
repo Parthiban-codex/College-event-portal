@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Admit-One Pass | {{ ticket.ticket_code }}{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    .desk-ruler-nav, .notebook-spine, footer, .no-print {
+        display: none !important;
+    }
+    .notebook-container {
+        box-shadow: none !important;
+        border: none !important;
+        background: #ffffff !important;
+    }
+    .notebook-page {
+        padding: 0 !important;
+        background: none !important;
+    }
+    .ticket-container {
+        box-shadow: none !important;
+        border: 2px solid #000000 !important;
+        background: #ffffff !important;
+        margin: 1cm auto !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Action Toolbar -->
+<div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('student_dashboard') }}" class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">
+        ← Back to My Passes
+    </a>
+
+    <div style="display: flex; gap: 0.8rem;">
+        <button type="button" onclick="window.print()" class="tactile-btn tactile-btn-primary">
+            🖨️ Print / Save Pass
+        </button>
+    </div>
+</div>
+
+<!-- Perforated Admit-One Skeuomorphic Ticket -->
+<div class="ticket-container">
+    
+    <!-- Main Ticket Section -->
+    <div class="ticket-main">
+        <div class="ticket-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <span class="ticket-org">CAMPUS EVENT ADMIT-ONE PASS</span>
+                    <h2 class="ticket-event-name">{{ ticket.event_title }}</h2>
+                </div>
+                <span class="card-tag" style="position: static;">{{ ticket.event_category }}</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.2rem;">
+            <small style="font-size: 0.75rem; text-transform: uppercase; color: var(--ink-pencil); font-weight: 800;">Admit To</small>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--ink-black); margin-top: 2px;">{{ ticket.student_name }}</h3>
+            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink-pen-blue); font-weight: 700;">
+                Roll No: {{ ticket.roll_number }} • {{ ticket.department }} ({{ ticket.year_of_study }})
+            </div>
+        </div>
+
+        <div class="ticket-grid">
+            <div class="ticket-field">
+                <label>Event Date</label>
+                <span>{{ ticket.event_date|datetimeformat('%a, %b %d, %Y') }}</span>
+            </div>
+            <div class="ticket-field">
+                <label>Time</label>
+                <span>{{ ticket.start_time|timeformat }}</span>
+            </div>
+            <div class="ticket-field" style="grid-column: span 2;">
+                <label>Venue Location</label>
+                <span>📍 {{ ticket.venue_name or 'Main Campus Auditorium' }}</span>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 0.8rem; border-top: 1px dashed var(--card-border);">
+            <div>
+                <small style="display: block; font-size: 0.7rem; color: var(--ink-pencil); font-weight: 700; text-transform: uppercase;">Pass Verification</small>
+                {% if ticket.status == 'attended' %}
+                    <span class="rubber-stamp stamp-attended">✓ ATTENDED</span>
+                {% elif ticket.status == 'approved' or ticket.payment_status == 'free' or ticket.payment_status == 'verified' %}
+                    <span class="rubber-stamp stamp-verified">✓ ADMIT ONE</span>
+                {% elif ticket.payment_status == 'pending' %}
+                    <span class="rubber-stamp stamp-pending">⏳ PENDING VERIFICATION</span>
+                {% else %}
+                    <span class="rubber-stamp stamp-rejected">REJECTED</span>
+                {% endif %}
+            </div>
+
+            <div style="text-align: right;">
+                <small style="display: block; font-size: 0.7rem; color: var(--ink-pencil); font-weight: 700; text-transform: uppercase;">Pass Fee</small>
+                <strong style="font-size: 1.1rem; color: var(--ink-black);">
+                    {% if ticket.event_fee == 0 %}FREE{% else %}₹{{ "%.0f"|format(ticket.event_fee) }}{% endif %}
+                </strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Stub (Perforated Gate Section) -->
+    <div class="ticket-stub">
+        <div style="text-transform: uppercase; font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; color: var(--ink-pencil); margin-bottom: 0.8rem;">
+            GATE PASS STUB
+        </div>
+
+        <!-- High-Res QR Code -->
+        {% if ticket.qr_code_image %}
+            <img src="{{ url_for('static', filename='uploads/tickets/' + ticket.qr_code_image) }}" alt="Ticket QR" class="ticket-qr-img">
+        {% else %}
+            <div class="ticket-qr-img" style="display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                🏁
+            </div>
+        {% endif %}
+
+        <div class="ticket-code-badge" style="margin-top: 0.8rem;">
+            {{ ticket.ticket_code }}
+        </div>
+
+        <p style="font-size: 0.72rem; color: var(--ink-pencil); margin-top: 0.6rem; line-height: 1.3;">
+            Scan at gate for verified entry.
+        </p>
+    </div>
+</div>
+{% endblock %}

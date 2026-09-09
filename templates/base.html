@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CampusPulse | College Student Event Planner{% endblock %}</title>
+    
+    <!-- Google Fonts for Modern Typography & Handwritten Accents -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Crumpled Paper Design System Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Floating Crumpled Paper Navigation Ribbon -->
+    <header class="desk-ruler-nav paper-nav">
+        <a href="{{ url_for('index') }}" class="nav-brand">
+            <span class="brand-notebook-icon">📄</span>
+            <span class="brand-pen-logo">Campus<span>Pulse</span></span>
+            <span class="hand-note" style="font-size: 1.1rem; color: var(--ink-pencil); margin-left: 4px;">~ Event Ledger</span>
+        </a>
+
+        <!-- Navigation Tabs -->
+        <nav>
+            <ul class="nav-links">
+                <li>
+                    <a href="{{ url_for('index') }}" class="nav-tab-btn {% if request.endpoint == 'index' %}active{% endif %}">
+                        <span>📋</span> Events
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('calendar_view') }}" class="nav-tab-btn {% if request.endpoint == 'calendar_view' %}active{% endif %}">
+                        <span>📅</span> Calendar
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('student_notifications') if session.get('role') == 'student' else url_for('admin_announcements') if session.get('role') == 'admin' else url_for('index') }}" class="nav-tab-btn">
+                        <span>📌</span> Notice Board
+                    </a>
+                </li>
+
+                {% if session.get('role') == 'student' %}
+                <li>
+                    <a href="{{ url_for('student_dashboard') }}" class="nav-tab-btn {% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+                        <span>🎫</span> My Passes
+                    </a>
+                </li>
+                {% elif session.get('role') == 'admin' %}
+                <li>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-tab-btn {% if 'admin' in request.endpoint %}active{% endif %}" style="color: #d97706; font-weight: 700;">
+                        <span>🛠️</span> Organizer Desk
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <!-- Theme Switcher & User Status -->
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <!-- Day Paper / Night Kraft Paper Mode Switch -->
+            <button id="deskLampToggle" class="desk-lamp-btn" type="button" title="Toggle Day Paper / Night Kraft Paper">
+                <span class="lamp-bulb"></span>
+                <span id="deskLampLabel">Day Paper</span>
+            </button>
+
+            {% if session.get('user_id') %}
+                <div class="user-desk-badge">
+                    <span class="user-desk-avatar">{{ session.get('name', 'U')[0] }}</span>
+                    <span>{{ session.get('name') }}</span>
+                    {% if session.get('role') == 'admin' %}
+                        <small style="background: rgba(245, 158, 11, 0.15); color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Admin</small>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" title="Sign Out" style="color: var(--stamp-red); margin-left: 4px; font-weight: 800;">✕</a>
+                </div>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="tactile-btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">Sign In</a>
+                <a href="{{ url_for('register') }}" class="tactile-btn tactile-btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">Register</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Main Crumpled Paper Workspace -->
+    <main class="desk-workspace paper-workspace">
+        <!-- The Crumpled Paper Sheet Canvas -->
+        <div class="notebook-container paper-sheet">
+            
+            <!-- Clean Page Body (No Spiral Spine, Spacious & Clean) -->
+            <div class="notebook-page paper-content">
+                
+                <!-- Flash Alerts styled like pinned notes -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-alert alert-{{ 'success' if category == 'success' else 'danger' if category in ['danger', 'error'] else 'warning' }}">
+                                <span>📌</span>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Content from Child Template -->
+                {% block content %}{% endblock %}
+
+            </div>
+        </div>
+
+        <!-- Clean Paper Watermark Footer -->
+        <footer style="text-align: center; margin-top: 2rem; color: var(--ink-pencil); font-size: 0.85rem;">
+            <p>📄 <strong>CampusPulse</strong> • College Student Event Planner • Built with Python, MySQL, HTML & CSS</p>
+            <p class="hand-note" style="margin-top: 0.3rem; font-size: 1.15rem;">Crumpled paper notes, verified passes & campus moments</p>
+        </footer>
+    </main>
+
+    <!-- Vanilla JS for Paper Mode & Interactions -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

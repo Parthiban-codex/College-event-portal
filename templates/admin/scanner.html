@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}QR Gate Attendance Scanner | Organizer Desk{% endblock %}
+
+{% block extra_head %}
+<!-- HTML5 QR Code Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">📷</span>
+            Live QR Gate Check-in Desk
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Scan student Admit-One passes via webcam, file upload, or ticket code</p>
+    </div>
+
+    <div>
+        <span class="rubber-stamp stamp-verified" style="font-size: 0.8rem;">GATE SCANNER ACTIVE</span>
+    </div>
+</div>
+
+<!-- Desk Navigation Divider Tabs -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">📷 QR Scanner</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
+    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+</div>
+
+<!-- Main Scanner Layout -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+    
+    <!-- Left Column: Camera Viewport & Controls -->
+    <div style="background: var(--paper-card); border: 2px solid var(--card-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center;">
+        
+        <div style="margin-bottom: 1.2rem;">
+            <label class="form-label" style="text-align: left;">Select Event Gate (Optional)</label>
+            <select id="scanner-event-filter" class="form-select">
+                <option value="">Any Active Event</option>
+                {% for ev in events %}
+                    <option value="{{ ev.id }}">{{ ev.title }} ({{ ev.event_date }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Camera Viewport Box -->
+        <div id="qr-reader" style="width: 100%; min-height: 280px; background: #0f172a; border-radius: 8px; overflow: hidden; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+            <span>📷 Camera preview will appear here when started</span>
+        </div>
+
+        <!-- Camera Control Buttons -->
+        <div style="display: flex; gap: 0.8rem; justify-content: center; margin-bottom: 1.5rem;">
+            <button type="button" id="btn-start-scanner" onclick="startCameraScanner()" class="tactile-btn tactile-btn-primary" style="padding: 0.75rem 1.5rem;">
+                ▶️ Start Camera Scanner
+            </button>
+            <button type="button" id="btn-stop-scanner" onclick="stopCameraScanner()" class="tactile-btn tactile-btn-danger" style="display: none; padding: 0.75rem 1.5rem;">
+                ⏹️ Stop Camera
+            </button>
+        </div>
+
+        <!-- File Upload Scanner Fallback -->
+        <div style="border-top: 1px dashed var(--card-border); padding-top: 1.2rem; text-align: left;">
+            <label class="form-label" style="font-size: 0.85rem;">📁 Or Upload Pass QR Screenshot</label>
+            <input type="file" id="qr-file-input" class="form-input" accept="image/*" onchange="handleQrFileUpload(this)">
+        </div>
+    </div>
+
+    <!-- Right Column: Verification Results & Manual Ticket Entry -->
+    <div>
+        <!-- Live Scan Result Card -->
+        <div style="background: var(--paper-card); border: 2px solid var(--ticket-edge); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-bottom: 1.8rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🎯</span> Gate Check-in Status
+            </h2>
+            
+            <div id="scan-result-container">
+                <div style="padding: 2.5rem 1rem; text-align: center; border: 2px dashed var(--card-border); border-radius: 8px; color: var(--ink-pencil);">
+                    <p style="font-size: 2rem; margin-bottom: 0.4rem;">🏁</p>
+                    <strong>Waiting for Pass Scan</strong>
+                    <p style="font-size: 0.85rem; margin-top: 4px;">Hold a student ticket QR code in front of the camera or enter ticket code below.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Ticket Code Entry Form -->
+        <div class="notebook-form">
+            <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.8rem; color: var(--ink-black);">
+                ⌨️ Manual Ticket Code Entry
+            </h3>
+            <form id="manual-ticket-form">
+                <div class="form-group">
+                    <label class="form-label">Ticket Code (e.g. EVT-2026-XXXX)</label>
+                    <input type="text" id="manual-ticket-code" class="form-input" placeholder="Enter ticket code..." required style="font-family: var(--font-mono); text-transform: uppercase;">
+                </div>
+                <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%;">
+                    🔍 Validate & Check-In Student
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In | CampusPulse{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 2rem auto;">
+    
+    <!-- Paper Card Login Form -->
+    <div class="notebook-form" style="position: relative;">
+
+        <div style="text-align: center; margin-bottom: 1.8rem;">
+            <span style="font-size: 2.2rem; display: inline-block; margin-bottom: 0.3rem;">🔑</span>
+            <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--ink-black);">Account Sign In</h1>
+            <p class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">Enter your student or organizer credentials</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}">
+            
+            <!-- User Role Selector Chips -->
+            <div class="form-group" style="text-align: center;">
+                <label class="form-label" style="margin-bottom: 0.6rem;">Select Your Role</label>
+                <div style="display: flex; justify-content: center; gap: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
+                        <input type="radio" name="user_type" value="student" id="role-student" checked style="accent-color: var(--ink-pen-blue);">
+                        <span>🎓 Student</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
+                        <input type="radio" name="user_type" value="admin" id="role-admin" style="accent-color: #d97706;">
+                        <span>🛠️ Organizer / Faculty</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="login-email">Email Address</label>
+                <input type="email" name="email" id="login-email" class="form-input" placeholder="e.g. alex@student.edu" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="login-password">Password</label>
+                <input type="password" name="password" id="login-password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.8rem 1rem; font-size: 1rem; margin-top: 0.5rem;">
+                Sign In ➔
+            </button>
+        </form>
+
+        <!-- Quick One-Click Demo Logins (Sticky Note) -->
+        <div style="margin-top: 1.8rem; background: var(--sticky-yellow); border: 1px solid var(--sticky-yellow-border); border-radius: 8px; padding: 1rem; position: relative;">
+            <div class="sticky-tape"></div>
+            <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e; margin-bottom: 0.6rem;">⚡ Quick Demo Login:</p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button type="button" class="tactile-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; justify-content: flex-start;" onclick="fillDemo('student', 'alex@student.edu', 'alex123')">
+                    🎓 Student: <strong>alex@student.edu</strong> (alex123)
+                </button>
+                <button type="button" class="tactile-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; justify-content: flex-start;" onclick="fillDemo('admin', 'admin@college.edu', 'admin123')">
+                    🛠️ Faculty Admin: <strong>admin@college.edu</strong> (admin123)
+                </button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.4rem; font-size: 0.88rem; color: var(--ink-pencil);">
+            New student? <a href="{{ url_for('register') }}" style="color: var(--ink-pen-blue); font-weight: 700; text-decoration: underline;">Enroll / Register here</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillDemo(type, email, pass) {
+    if (type === 'student') {
+        document.getElementById('role-student').checked = true;
+    } else {
+        document.getElementById('role-admin').checked = true;
+    }
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = pass;
+}
+</script>
+{% endblock %}

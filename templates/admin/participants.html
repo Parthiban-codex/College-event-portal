@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Student Attendees & Roster Ledger | Organizer Desk{% endblock %}
+
+{% block content %}
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">👥</span>
+            Attendee Rosters & CSV Export
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Official student participant sheets, roll numbers & attendance timestamps</p>
+    </div>
+
+    {% if selected_event_id and participants %}
+        <div>
+            <a href="{{ url_for('export_participants_csv', event_id=selected_event_id) }}" class="tactile-btn tactile-btn-success">
+                📥 Download Roster (CSV)
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Desk Navigation Divider Tabs -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">👥 Participants & CSV</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
+    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+</div>
+
+<!-- Event Selector Shelf -->
+<div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1.2rem; margin-bottom: 1.8rem;">
+    <form action="{{ url_for('admin_participants') }}" method="GET" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <select name="event_id" class="form-select" style="flex: 3; min-width: 250px;" onchange="this.form.submit()">
+            <option value="">-- Select Campus Event to Inspect Roster --</option>
+            {% for ev in events %}
+                <option value="{{ ev.id }}" {% if selected_event_id == ev.id %}selected{% endif %}>{{ ev.title }} ({{ ev.event_date }})</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="tactile-btn tactile-btn-primary" style="flex: 1;">
+            Load Sheet
+        </button>
+    </form>
+</div>
+
+<!-- Roster Ledger Sheet -->
+<div class="ledger-table-container">
+    <div style="padding: 1.2rem; border-bottom: 1px dashed var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--ink-black); margin: 0;">
+            Enrolled Attendees ({{ participants|length }})
+        </h2>
+        {% if selected_event_id and participants %}
+            <a href="{{ url_for('export_participants_csv', event_id=selected_event_id) }}" style="color: var(--stamp-green); font-weight: 700; font-size: 0.88rem;">
+                📥 Export Official CSV Sheet
+            </a>
+        {% endif %}
+    </div>
+
+    <table class="ledger-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Department & Year</th>
+                <th>Phone & Email</th>
+                <th>Ticket Code</th>
+                <th>Status</th>
+                <th>Check-in Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if participants %}
+                {% for p in participants %}
+                    <tr>
+                        <td style="color: var(--ink-pencil); font-family: var(--font-mono);">{{ loop.index }}</td>
+                        <td><strong>{{ p.student_name }}</strong></td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--ink-pen-blue);">{{ p.roll_number }}</td>
+                        <td>{{ p.department }} ({{ p.year_of_study }})</td>
+                        <td>
+                            <div>{{ p.email }}</div>
+                            <small style="color: var(--ink-pencil);">{{ p.phone }}</small>
+                        </td>
+                        <td>
+                            <code class="ticket-code-badge" style="font-size: 0.75rem;">{{ p.ticket_code }}</code>
+                        </td>
+                        <td>
+                            {% if p.status == 'attended' %}
+                                <span class="rubber-stamp stamp-attended" style="font-size: 0.65rem;">ATTENDED</span>
+                            {% elif p.status == 'approved' %}
+                                <span class="rubber-stamp stamp-verified" style="font-size: 0.65rem;">REGISTERED</span>
+                            {% else %}
+                                <span class="rubber-stamp stamp-pending" style="font-size: 0.65rem;">{{ p.status|upper }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-pencil);">
+                            {{ p.attended_at|datetimeformat('%b %d, %I:%M %p') if p.attended_at else '—' }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--ink-pencil); padding: 3rem;">
+                        {% if selected_event_id %}
+                            No students registered for this event yet.
+                        {% else %}
+                            Please select an event above to inspect attendee roster.
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

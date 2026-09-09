@@ -1,0 +1,958 @@
+/* ==============================================================================
+   CAMPUS PULSE - STUDENT EVENT PLANNER
+   Design System: Simplified Crumpled Paper Aesthetic
+   Tactile crumpled paper texture, organic crease shading, clean modern layouts
+   Pure Vanilla CSS (Zero bloated external dependencies)
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+/* --- DESIGN TOKENS & COLOR PALETTES --- */
+:root {
+    /* Modern Typography */
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-hand: 'Caveat', cursive, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Theme: Light Mode (Day Crumpled Paper) */
+    --ambient-bg: #ece7dc;
+    --ambient-gradient: radial-gradient(circle at 50% 10%, #f4efe4 0%, #ebe5d7 55%, #ded6c5 100%);
+    
+    --paper-sheet-bg: #faf8f5;
+    --paper-texture-url: url('../images/crumpled_paper_light.jpg');
+    --paper-sheet-border: rgba(180, 168, 150, 0.35);
+    --paper-sheet-shadow: 
+        0 25px 60px -15px rgba(60, 48, 30, 0.18),
+        0 8px 24px -6px rgba(60, 48, 30, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+
+    /* Subtle Paper Crease Shading Overlays */
+    --crease-overlay: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(0, 0, 0, 0.02) 48%,
+        rgba(255, 255, 255, 0.35) 52%,
+        rgba(0, 0, 0, 0.03) 70%,
+        rgba(255, 255, 255, 0.2) 100%
+    );
+
+    /* Paper Cards & Containers */
+    --paper-card: rgba(255, 255, 255, 0.94);
+    --card-border: rgba(210, 200, 185, 0.6);
+    --card-shadow: 0 4px 14px -2px rgba(50, 38, 20, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --card-shadow-hover: 0 14px 28px -6px rgba(50, 38, 20, 0.15), 0 4px 8px rgba(0, 0, 0, 0.06);
+
+    /* Ink & Contrast */
+    --ink-black: #1e2530;
+    --ink-pen-blue: #1d4ed8;
+    --ink-pencil: #526071;
+    --ink-faint: #8896a6;
+
+    /* Sticky / Memo Pastel Slips */
+    --sticky-yellow: #fefce8;
+    --sticky-yellow-border: #fef08a;
+    --sticky-mint: #f0fdf4;
+    --sticky-mint-border: #bbf7d0;
+    --sticky-rose: #fff1f2;
+    --sticky-rose-border: #fecdd3;
+    --sticky-tape: rgba(254, 240, 138, 0.7);
+
+    /* Rubber Ink Stamps */
+    --stamp-green: #15803d;
+    --stamp-orange: #c2410c;
+    --stamp-red: #b91c1c;
+    --stamp-blue: #1d4ed8;
+
+    /* Buttons */
+    --btn-primary-bg: #2563eb;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #1d4ed8;
+    
+    /* Perforated Admit-One Ticket */
+    --ticket-bg: #fffcf2;
+    --ticket-edge: #d97706;
+
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+/* --- THEME: DARK MODE (Night Crumpled Kraft Paper) --- */
+[data-theme="dark"] {
+    --ambient-bg: #121316;
+    --ambient-gradient: radial-gradient(circle at 50% 10%, #1e2025 0%, #15161a 60%, #0d0e10 100%);
+
+    --paper-sheet-bg: #1e2025;
+    --paper-texture-url: url('../images/crumpled_paper_dark.jpg');
+    --paper-sheet-border: rgba(255, 255, 255, 0.08);
+    --paper-sheet-shadow: 
+        0 30px 70px -15px rgba(0, 0, 0, 0.7),
+        0 10px 30px -8px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+
+    --crease-overlay: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(0, 0, 0, 0.15) 35%,
+        rgba(255, 255, 255, 0.04) 50%,
+        rgba(0, 0, 0, 0.2) 75%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+
+    --paper-card: rgba(30, 33, 40, 0.92);
+    --card-border: rgba(255, 255, 255, 0.09);
+    --card-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 16px 32px -6px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.4);
+
+    --ink-black: #f1f5f9;
+    --ink-pen-blue: #60a5fa;
+    --ink-pencil: #94a3b8;
+    --ink-faint: #64748b;
+
+    --sticky-yellow: #292415;
+    --sticky-yellow-border: #4d3e17;
+    --sticky-mint: #13271d;
+    --sticky-mint-border: #1c452e;
+    --sticky-rose: #2d161d;
+    --sticky-rose-border: #521c2c;
+    --sticky-tape: rgba(234, 179, 8, 0.25);
+
+    --stamp-green: #22c55e;
+    --stamp-orange: #fb923c;
+    --stamp-red: #f87171;
+    --stamp-blue: #60a5fa;
+
+    --btn-primary-bg: #3b82f6;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #2563eb;
+
+    --ticket-bg: #222630;
+    --ticket-edge: #f59e0b;
+}
+
+/* --- BASE & GLOBAL RESETS --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--ink-black);
+    background-color: var(--ambient-bg);
+    background-image: var(--ambient-gradient);
+    min-height: 100vh;
+    line-height: 1.55;
+    overflow-x: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+}
+
+/* --- FLOATING CRUMPLED PAPER NAVBAR --- */
+.desk-ruler-nav, .paper-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--paper-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1.5px solid var(--card-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    padding: 0.8rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+/* Clean Paper Brand */
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.brand-notebook-icon {
+    font-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-pen-logo {
+    color: var(--ink-pen-blue);
+    position: relative;
+}
+
+.brand-pen-logo span {
+    color: var(--ink-black);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+}
+
+/* Modern Pill Navigation Tabs */
+.nav-tab-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink-pencil);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.nav-tab-btn:hover {
+    color: var(--ink-black);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .nav-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-tab-btn.active {
+    color: var(--ink-pen-blue);
+    background: var(--paper-sheet-bg);
+    border-color: var(--card-border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Paper Theme Switcher Button */
+.desk-lamp-btn {
+    background: var(--paper-sheet-bg);
+    border: 1.5px solid var(--card-border);
+    color: var(--ink-black);
+    padding: 0.45rem 0.9rem;
+    border-radius: 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+}
+
+.desk-lamp-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-color: var(--ink-pen-blue);
+}
+
+.lamp-bulb {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #eab308;
+    box-shadow: 0 0 8px #facc15;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .lamp-bulb {
+    background: #60a5fa;
+    box-shadow: 0 0 8px #93c5fd;
+}
+
+/* User Profile Badge */
+.user-desk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.8rem;
+    background: var(--paper-sheet-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.user-desk-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink-pen-blue);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+/* --- MAIN WORKSPACE & CRUMPLED PAPER SHEET --- */
+.desk-workspace, .paper-workspace {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 2rem auto 3.5rem auto;
+    padding: 0 1.5rem;
+}
+
+/* The Crumpled Paper Sheet Container */
+.notebook-container, .paper-sheet {
+    position: relative;
+    background-color: var(--paper-sheet-bg);
+    background-image: var(--crease-overlay), var(--paper-texture-url);
+    background-size: cover, cover;
+    background-position: center, center;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--paper-sheet-border);
+    box-shadow: var(--paper-sheet-shadow);
+    min-height: 820px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Realistic Dog-Ear Fold on top-right paper corner */
+.notebook-container::after, .paper-sheet::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.03) 60%, transparent 60%);
+    pointer-events: none;
+}
+
+[data-theme="dark"] .notebook-container::after, [data-theme="dark"] .paper-sheet::after {
+    background: linear-gradient(225deg, transparent 50%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 60%, transparent 60%);
+}
+
+/* Hide the old heavy spiral metal spine completely for clean, spacious width */
+.notebook-spine {
+    display: none !important;
+}
+
+/* Main Inner Page Content Area - clean, breathable, no horizontal ruled lines! */
+.notebook-page, .paper-content {
+    flex: 1;
+    position: relative;
+    padding: 2.5rem 3rem;
+    width: 100%;
+}
+
+/* Header Banner Inside the Paper Sheet */
+.notebook-tabs-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1.2rem;
+    margin-bottom: 1.8rem;
+    border-bottom: 1.5px dashed var(--card-border);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.notebook-title {
+    font-size: 1.95rem;
+    font-weight: 800;
+    color: var(--ink-black);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    letter-spacing: -0.5px;
+}
+
+.pen-accent-icon {
+    font-size: 1.4rem;
+    color: var(--ink-pen-blue);
+}
+
+.hand-note {
+    font-family: var(--font-hand);
+    font-size: 1.35rem;
+    color: var(--ink-pen-blue);
+    line-height: 1.1;
+    display: inline-block;
+}
+
+/* --- TACTILE PAPER BUTTONS (CLEAN & MODERN) --- */
+.tactile-btn, .paper-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid var(--card-border);
+    background-color: var(--paper-card);
+    color: var(--ink-black);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+    transition: all 0.15s ease;
+    text-align: center;
+    text-decoration: none;
+}
+
+.tactile-btn:hover, .paper-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--ink-pencil);
+}
+
+.tactile-btn:active, .paper-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tactile-btn-primary {
+    background-color: var(--btn-primary-bg) !important;
+    color: var(--btn-primary-text) !important;
+    border-color: var(--btn-primary-bg) !important;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25) !important;
+}
+
+.tactile-btn-primary:hover {
+    background-color: var(--btn-primary-hover) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+}
+
+.tactile-btn-success {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #059669 !important;
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25) !important;
+}
+
+.tactile-btn-danger {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.25) !important;
+}
+
+/* --- CRUMPLED PAPER MEMO SLIPS (STATS & NOTICES) --- */
+.sticky-note {
+    position: relative;
+    padding: 1.4rem;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sticky-note:hover {
+    transform: translateY(-3px) rotate(0deg) !important;
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.12);
+    z-index: 5;
+}
+
+.sticky-tape {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 16px;
+    background: var(--sticky-tape);
+    border-left: 1.5px dashed rgba(0,0,0,0.15);
+    border-right: 1.5px dashed rgba(0,0,0,0.15);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.sticky-yellow {
+    background: var(--sticky-yellow);
+    border-color: var(--sticky-yellow-border);
+}
+
+.sticky-mint {
+    background: var(--sticky-mint);
+    border-color: var(--sticky-mint-border);
+}
+
+.sticky-rose {
+    background: var(--sticky-rose);
+    border-color: var(--sticky-rose-border);
+}
+
+/* --- EVENT CARDS (CRUMPLED FLYER CARDS) --- */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 1.8rem;
+    margin-top: 1.5rem;
+}
+
+.event-index-card {
+    background: var(--paper-card);
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.event-index-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+    border-color: var(--ink-pen-blue);
+}
+
+/* Paper clip removed for simplicity, clean layout */
+.paper-clip {
+    display: none !important;
+}
+
+.card-banner-box {
+    width: 100%;
+    height: 185px;
+    overflow: hidden;
+    position: relative;
+    background: #0f172a;
+}
+
+.card-banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.event-index-card:hover .card-banner-img {
+    transform: scale(1.04);
+}
+
+.card-tag {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: var(--paper-card);
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ink-black);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.card-body {
+    padding: 1.3rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-date-badge {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--ink-pen-blue);
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.card-title {
+    font-size: 1.18rem;
+    font-weight: 800;
+    color: var(--ink-black);
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+}
+
+.card-desc {
+    font-size: 0.88rem;
+    color: var(--ink-pencil);
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-meta-row {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--card-border);
+}
+
+.card-fee {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--ink-black);
+}
+
+.fee-free {
+    color: #10b981;
+    font-weight: 800;
+}
+
+/* --- PERFORATED ADMIT-ONE TICKET PASS --- */
+.ticket-container {
+    max-width: 680px;
+    margin: 2rem auto;
+    position: relative;
+    background: var(--ticket-bg);
+    border: 2px solid var(--ticket-edge);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+    display: flex;
+    overflow: hidden;
+}
+
+/* Circular Punch Cuts on Ticket Borders */
+.ticket-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -16px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--paper-sheet-bg);
+    border-right: 2px solid var(--ticket-edge);
+    z-index: 5;
+}
+
+.ticket-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -16px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--paper-sheet-bg);
+    border-left: 2px solid var(--ticket-edge);
+    z-index: 5;
+}
+
+.ticket-main {
+    flex: 1;
+    padding: 2.2rem;
+    border-right: 2px dashed var(--ticket-edge);
+    position: relative;
+}
+
+.ticket-stub {
+    width: 210px;
+    background: rgba(217, 119, 6, 0.04);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.ticket-header {
+    border-bottom: 1.5px solid var(--card-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ticket-org {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-pencil);
+}
+
+.ticket-event-name {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--ink-black);
+    margin-top: 0.25rem;
+}
+
+.ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.ticket-field label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--ink-pencil);
+    font-weight: 700;
+}
+
+.ticket-field span {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink-black);
+}
+
+.ticket-code-badge {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--ink-pen-blue);
+    background: rgba(37, 99, 235, 0.08);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: 1px dashed var(--ink-pen-blue);
+    display: inline-block;
+}
+
+.ticket-qr-img {
+    width: 140px;
+    height: 140px;
+    border: 2px solid var(--ink-black);
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+/* Rubber Ink Stamps */
+.rubber-stamp {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    border: 2px solid;
+    border-radius: 6px;
+    transform: rotate(-2deg);
+}
+
+.stamp-verified {
+    color: var(--stamp-green);
+    border-color: var(--stamp-green);
+}
+
+.stamp-pending {
+    color: var(--stamp-orange);
+    border-color: var(--stamp-orange);
+}
+
+.stamp-rejected {
+    color: var(--stamp-red);
+    border-color: var(--stamp-red);
+}
+
+.stamp-attended {
+    color: var(--stamp-blue);
+    border-color: var(--stamp-blue);
+}
+
+/* --- FORMS & WRITING FIELDS --- */
+.notebook-form {
+    background: var(--paper-card);
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 2.2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.form-group {
+    margin-bottom: 1.4rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--ink-black);
+    margin-bottom: 0.4rem;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--card-border);
+    background: var(--paper-sheet-bg);
+    color: var(--ink-black);
+    font-size: 0.95rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--ink-pen-blue);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* --- SEARCH & CATEGORY FILTER TABS --- */
+.filter-shelf {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin: 1.2rem 0;
+}
+
+.filter-chip {
+    padding: 0.45rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--paper-card);
+    border: 1px solid var(--card-border);
+    color: var(--ink-pencil);
+    transition: all 0.2s ease;
+}
+
+.filter-chip:hover, .filter-chip.active {
+    color: var(--ink-pen-blue);
+    border-color: var(--ink-pen-blue);
+    background: rgba(37, 99, 235, 0.06);
+}
+
+.search-input-box {
+    position: relative;
+    max-width: 380px;
+    width: 100%;
+}
+
+.search-input-box input {
+    width: 100%;
+    padding: 0.65rem 1rem 0.65rem 2.4rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--card-border);
+    background: var(--paper-card);
+    color: var(--ink-black);
+    font-size: 0.9rem;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-pencil);
+}
+
+/* --- LEDGER TABLE (ADMIN & PARTICIPANTS) --- */
+.ledger-table-container {
+    background: var(--paper-card);
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    box-shadow: var(--card-shadow);
+}
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.ledger-table th {
+    background: rgba(0, 0, 0, 0.03);
+    padding: 0.9rem 1.2rem;
+    font-weight: 800;
+    color: var(--ink-pencil);
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    border-bottom: 1.5px solid var(--card-border);
+}
+
+[data-theme="dark"] .ledger-table th {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.ledger-table td {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--card-border);
+    color: var(--ink-black);
+}
+
+.ledger-table tr:hover td {
+    background: rgba(37, 99, 235, 0.04);
+}
+
+/* Flash alerts styled as pinned paper notes */
+.flash-alert {
+    padding: 0.9rem 1.2rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+.alert-success {
+    background: var(--sticky-mint);
+    border: 1px solid var(--sticky-mint-border);
+    color: #15803d;
+}
+
+.alert-danger {
+    background: var(--sticky-rose);
+    border: 1px solid var(--sticky-rose-border);
+    color: #b91c1c;
+}
+
+.alert-warning {
+    background: var(--sticky-yellow);
+    border: 1px solid var(--sticky-yellow-border);
+    color: #a16207;
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 900px) {
+    .desk-workspace, .paper-workspace {
+        padding: 0 0.8rem;
+        margin-top: 1rem;
+    }
+    .notebook-page, .paper-content {
+        padding: 1.5rem 1.2rem;
+    }
+    .ticket-container {
+        flex-direction: column;
+    }
+    .ticket-main {
+        border-right: none;
+        border-bottom: 2px dashed var(--ticket-edge);
+        padding: 1.5rem;
+    }
+    .ticket-stub {
+        width: 100%;
+        padding: 1.5rem;
+    }
+}

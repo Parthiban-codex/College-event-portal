@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+static/uploads/banners/*
+static/uploads/payment_qrs/*
+static/uploads/receipts/*
+static/uploads/tickets/*
+!static/uploads/**/.gitkeep

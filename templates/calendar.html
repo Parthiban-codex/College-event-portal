@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Event Calendar | CampusPulse{% endblock %}
+
+{% block extra_head %}
+<!-- FullCalendar 6 -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<style>
+.fc {
+    font-family: var(--font-main);
+    color: var(--ink-black);
+    --fc-page-bg-color: var(--paper-card);
+    --fc-border-color: var(--card-border);
+    --fc-today-bg-color: rgba(37, 99, 235, 0.08);
+}
+.fc-toolbar-title {
+    font-size: 1.4rem !important;
+    font-weight: 800;
+    color: var(--ink-black);
+}
+.fc-button-primary {
+    background-color: var(--paper-card) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--ink-black) !important;
+    font-weight: 700 !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06) !important;
+}
+.fc-button-primary:hover, .fc-button-primary.fc-button-active {
+    background-color: var(--ink-pen-blue) !important;
+    border-color: var(--ink-pen-blue) !important;
+    color: #ffffff !important;
+}
+.fc-event {
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.fc-col-header-cell-cushion {
+    color: var(--ink-pencil);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding: 8px 0 !important;
+}
+.fc-daygrid-day-number {
+    color: var(--ink-pencil);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">📅</span>
+            Campus Calendar
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Monthly & weekly event schedule across campus</p>
+    </div>
+
+    <div style="display: flex; gap: 0.8rem;">
+        <a href="{{ url_for('index') }}" class="tactile-btn">
+            📋 Events List
+        </a>
+    </div>
+</div>
+
+<!-- Desk Highlighter Color Legend -->
+<div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1rem 1.4rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; font-size: 0.85rem; font-weight: 700;">
+    <span style="color: var(--ink-pencil); text-transform: uppercase; font-size: 0.75rem;">Marker Legend:</span>
+    <span style="display: inline-flex; align-items: center; gap: 0.35rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #2563eb;"></span> Hackathons</span>
+    <span style="display: inline-flex; align-items: center; gap: 0.35rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #ec4899;"></span> Cultural Fests</span>
+    <span style="display: inline-flex; align-items: center; gap: 0.35rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #0284c7;"></span> Workshops</span>
+    <span style="display: inline-flex; align-items: center; gap: 0.35rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #d97706;"></span> Robotics</span>
+    <span style="display: inline-flex; align-items: center; gap: 0.35rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></span> Gaming & Esports</span>
+</div>
+
+<!-- FullCalendar Container inside the Notebook -->
+<div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: 0 6px 16px rgba(0,0,0,0.06);">
+    <div id="desk-calendar-view"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('desk-calendar-view');
+    if (!calendarEl) return;
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        events: '/api/calendar-events',
+        eventClick: function(info) {
+            if (info.event.url) {
+                info.jsEvent.preventDefault();
+                window.location.href = info.event.url;
+            }
+        },
+        dayMaxEvents: true
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

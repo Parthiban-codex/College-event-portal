@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Broadcast Notice Board | Organizer Desk{% endblock %}
+
+{% block content %}
+<div class="notebook-tabs-bar">
+    <div>
+        <h1 class="notebook-title">
+            <span class="pen-accent-icon">📢</span>
+            Campus Announcements & Notices
+        </h1>
+        <p class="hand-note" style="margin-top: 4px;">~ Post official bulletins, schedule updates & alerts to students</p>
+    </div>
+
+    <div>
+        <span class="rubber-stamp stamp-verified" style="font-size: 0.8rem;">BROADCASTER</span>
+    </div>
+</div>
+
+<!-- Desk Navigation Divider Tabs -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">📢 Announcements</a>
+    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start;">
+    
+    <!-- Draft Notice Form -->
+    <div class="notebook-form" style="border: 1.5px solid var(--card-border);">
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>✍️</span> Pin New Campus Notice
+        </h2>
+
+        <form action="{{ url_for('admin_announcements') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Notice Title <span style="color: red;">*</span></label>
+                <input type="text" name="title" class="form-input" placeholder="e.g. Schedule Change or Gate Pass Instructions" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Target Audience</label>
+                <select name="target_audience" class="form-select">
+                    <option value="all">📢 All Campus Students</option>
+                    <option value="registered_students">🎟️ Registered Attendees Only</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Associated Event (Optional)</label>
+                <select name="event_id" class="form-select">
+                    <option value="">-- General Campus Broadcast --</option>
+                    {% for ev in events %}
+                        <option value="{{ ev.id }}">{{ ev.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notice Message <span style="color: red;">*</span></label>
+                <textarea name="message" class="form-textarea" rows="4" placeholder="Type the announcement details clearly..." required></textarea>
+            </div>
+
+            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.8rem;">
+                📌 Pin Notice to Bulletin Board
+            </button>
+        </form>
+    </div>
+
+    <!-- Active Bulletins List -->
+    <div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1.2rem;">
+            📋 Posted Bulletins
+        </h2>
+
+        {% if announcements %}
+            <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+                {% for a in announcements %}
+                    <div class="sticky-note sticky-yellow" style="padding: 1.2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
+                            <strong style="font-size: 1.05rem; color: #713f12;">{{ a.title }}</strong>
+                            <small style="font-family: var(--font-mono); color: #854d0e; font-size: 0.75rem;">
+                                {{ a.created_at|datetimeformat('%b %d, %Y') }}
+                            </small>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #1c1917; line-height: 1.5; margin-bottom: 0.8rem;">
+                            {{ a.message }}
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(0,0,0,0.15); padding-top: 0.6rem;">
+                            <small style="color: #854d0e; font-weight: 700;">
+                                Audience: {{ a.target_audience }}
+                            </small>
+                            <form action="{{ url_for('admin_delete_announcement', announcement_id=a.id) }}" method="POST" onsubmit="return confirm('Remove this notice?');" style="margin: 0;">
+                                <button type="submit" style="background: none; border: none; color: #b91c1c; font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
+                                    Remove Notice ✕
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 3rem 1rem; text-align: center; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+                <p style="color: var(--ink-pencil);">No active notices posted yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
