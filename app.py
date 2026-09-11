@@ -20,7 +20,6 @@ from database import get_db_connection, init_db, ensure_upload_dirs
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Ensure upload directories exist
 ensure_upload_dirs()
 
 def allowed_file(filename):

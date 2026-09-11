@@ -3,14 +3,11 @@
 {% block title %}{{ event.title }} | CampusPulse{% endblock %}
 
 {% block content %}
-<!-- Back to Events Link -->
 <div style="margin-bottom: 1.2rem;">
     <a href="{{ url_for('index') }}" class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">
         ← Back to Events
     </a>
 </div>
-
-<!-- Event Headline & Categories -->
 <div class="notebook-tabs-bar" style="border-bottom: 2px solid var(--card-border);">
     <div>
         <div style="display: flex; gap: 0.6rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">

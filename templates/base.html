@@ -5,27 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CampusPulse | College Student Event Planner{% endblock %}</title>
     
-    <!-- Google Fonts for Modern Typography & Handwritten Accents -->
+  
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
-    <!-- Crumpled Paper Design System Stylesheet -->
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-    <!-- Floating Crumpled Paper Navigation Ribbon -->
+    
     <header class="desk-ruler-nav paper-nav">
         <a href="{{ url_for('index') }}" class="nav-brand">
             <span class="brand-notebook-icon">📄</span>
             <span class="brand-pen-logo">Campus<span>Pulse</span></span>
             <span class="hand-note" style="font-size: 1.1rem; color: var(--ink-pencil); margin-left: 4px;">~ Event Ledger</span>
         </a>
-
-        <!-- Navigation Tabs -->
         <nav>
             <ul class="nav-links">
                 <li>
@@ -60,7 +58,7 @@
             </ul>
         </nav>
 
-        <!-- Theme Switcher & User Status -->
+    
         <div style="display: flex; align-items: center; gap: 0.8rem;">
             <!-- Day Paper / Night Kraft Paper Mode Switch -->
             <button id="deskLampToggle" class="desk-lamp-btn" type="button" title="Toggle Day Paper / Night Kraft Paper">
@@ -83,16 +81,9 @@
             {% endif %}
         </div>
     </header>
-
-    <!-- Main Crumpled Paper Workspace -->
     <main class="desk-workspace paper-workspace">
-        <!-- The Crumpled Paper Sheet Canvas -->
         <div class="notebook-container paper-sheet">
-            
-            <!-- Clean Page Body (No Spiral Spine, Spacious & Clean) -->
             <div class="notebook-page paper-content">
-                
-                <!-- Flash Alerts styled like pinned notes -->
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
@@ -104,20 +95,18 @@
                     {% endif %}
                 {% endwith %}
 
-                <!-- Content from Child Template -->
                 {% block content %}{% endblock %}
 
             </div>
         </div>
 
-        <!-- Clean Paper Watermark Footer -->
+
         <footer style="text-align: center; margin-top: 2rem; color: var(--ink-pencil); font-size: 0.85rem;">
-            <p>📄 <strong>CampusPulse</strong> • College Student Event Planner • Built with Python, MySQL, HTML & CSS</p>
+            <p>📄 <strong>CampusPulse</strong> • College Student Event Planner • Made by Parthiban</p>
             <p class="hand-note" style="margin-top: 0.3rem; font-size: 1.15rem;">Crumpled paper notes, verified passes & campus moments</p>
         </footer>
     </main>
 
-    <!-- Vanilla JS for Paper Mode & Interactions -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
 

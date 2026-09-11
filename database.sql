@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS `college_event_planner` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `college_event_planner`;
 
--- 1. Students Table
+
 CREATE TABLE IF NOT EXISTS `students` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(100) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `students` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2. Admins / Organizers Table
+
 CREATE TABLE IF NOT EXISTS `admins` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(100) NOT NULL,
@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS `admins` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 3. Venues Table
 CREATE TABLE IF NOT EXISTS `venues` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(100) NOT NULL,
@@ -34,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `venues` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 4. Events Table
+
 CREATE TABLE IF NOT EXISTS `events` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `title` VARCHAR(200) NOT NULL,
@@ -56,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `events` (
     FOREIGN KEY (`created_by`) REFERENCES `admins`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 5. Registrations & Passes Table
+
 CREATE TABLE IF NOT EXISTS `registrations` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `student_id` INT NOT NULL,
@@ -74,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `registrations` (
     UNIQUE KEY `unique_student_event` (`student_id`, `event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 6. Notifications Table
+
 CREATE TABLE IF NOT EXISTS `notifications` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `title` VARCHAR(200) NOT NULL,
@@ -85,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
     FOREIGN KEY (`event_id`) REFERENCES `events`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 7. Event Feedback & Star Ratings
+
 CREATE TABLE IF NOT EXISTS `feedback` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `student_id` INT NOT NULL,
