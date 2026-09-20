@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}{{ session.get('club_name') }} Dashboard | RGCET Event Hub{% endblock %}
+
+{% block content %}
+<!-- Header Bar -->
+<div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+            <span class="morphic-badge morphic-badge-blue" style="font-size: 0.82rem;">{{ session.get('club_name') }}</span>
+            <span class="morphic-badge morphic-badge-amber" style="font-size: 0.82rem; text-transform: uppercase;">{{ session.get('club_role') }}</span>
+        </div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
+            Club Workspace Desk
+        </h1>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 2px;">
+            Member Code: <strong style="font-family: var(--font-mono); color: var(--rgcet-royal);">{{ session.get('member_code') }}</strong> • Welcome, {{ session.get('name') }}!
+        </p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        {% if session.get('club_role') in ['leader', 'faculty'] %}
+            <a href="{{ url_for('club_create_event') }}" class="morphic-btn morphic-btn-primary">
+                <span>➕</span> Create Event Proposal
+            </a>
+        {% endif %}
+        {% if session.get('club_role') == 'faculty' and pending_faculty_events|length > 0 %}
+            <a href="{{ url_for('club_approvals') }}" class="morphic-btn" style="background: var(--status-amber-bg); border-color: var(--status-amber-border); color: var(--status-amber-text); font-weight: 700;">
+                <span>📥</span> Review Proposals ({{ pending_faculty_events|length }})
+            </a>
+        {% endif %}
+        <a href="{{ url_for('club_members') }}" class="morphic-btn">
+            <span>👥</span> Club Roster
+        </a>
+    </div>
+</div>
+
+<!-- Workflow Notice Banner if Faculty has pending approvals -->
+{% if session.get('club_role') == 'faculty' and pending_faculty_events|length > 0 %}
+<div class="flash-alert alert-warning" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <span style="font-size: 1.5rem;">⚠️</span>
+        <div>
+            <strong>Action Required:</strong> You have <strong>{{ pending_faculty_events|length }}</strong> event proposal(s) submitted by your Club Leader waiting for your review before forwarding to Central Admin!
+        </div>
+    </div>
+    <a href="{{ url_for('club_approvals') }}" class="morphic-btn morphic-btn-primary" style="padding: 0.45rem 1rem; font-size: 0.84rem;">
+        Review Now ➔
+    </a>
+</div>
+{% endif %}
+
+<!-- Stats Cards Grid (Minimalist 2D Morphic Tiles) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2.2rem;">
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Total Events</div>
+        <div class="morphic-stat-value" style="color: var(--rgcet-royal);">{{ stats.total_events }}</div>
+        <div class="morphic-stat-sub">Club initiatives</div>
+    </div>
+
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Live / Upcoming</div>
+        <div class="morphic-stat-value" style="color: #10B981;">{{ stats.active_events }}</div>
+        <div class="morphic-stat-sub">Approved by Admin</div>
+    </div>
+
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Student Passes</div>
+        <div class="morphic-stat-value" style="color: #F59E0B;">{{ stats.total_registrations }}</div>
+        <div class="morphic-stat-sub">Total attendees registered</div>
+    </div>
+
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Checked In (Attended)</div>
+        <div class="morphic-stat-value" style="color: #8B5CF6;">{{ stats.total_attended }}</div>
+        <div class="morphic-stat-sub">QR verified at gates</div>
+    </div>
+</div>
+
+<!-- Recent Events Section -->
+<div style="margin-bottom: 2.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
+            🎪 Club Events & Lifecycle Status
+        </h2>
+        <a href="{{ url_for('club_events') }}" style="font-size: 0.88rem; color: var(--rgcet-royal); font-weight: 700;">
+            View All Club Events ➔
+        </a>
+    </div>
+
+    {% if events %}
+        <div class="morphic-table-wrap">
+            <table class="morphic-table">
+                <thead>
+                    <tr>
+                        <th>Event Title</th>
+                        <th>Category</th>
+                        <th>Date & Time</th>
+                        <th>Venue</th>
+                        <th>Registrations</th>
+                        <th>Approval Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ev in events %}
+                        <tr>
+                            <td style="font-weight: 800;">
+                                {{ ev.title }}
+                            </td>
+                            <td>
+                                <span class="morphic-badge morphic-badge-blue" style="font-size: 0.72rem;">{{ ev.category }}</span>
+                            </td>
+                            <td>
+                                <div>{{ ev.event_date|datetimeformat('%b %d, %Y') }}</div>
+                                <small style="color: var(--text-muted);">{{ ev.start_time|timeformat }}</small>
+                            </td>
+                            <td>{{ ev.venue_name or 'TBD' }}</td>
+                            <td>
+                                <strong>{{ ev.registered_count or 0 }}</strong> / {{ ev.capacity }}
+                            </td>
+                            <td>
+                                {% if ev.status == 'upcoming' %}
+                                    <span class="morphic-badge morphic-badge-emerald">Approved & Live</span>
+                                {% elif ev.status == 'pending_faculty' %}
+                                    <span class="morphic-badge morphic-badge-amber">Waiting Faculty Review</span>
+                                {% elif ev.status == 'pending_admin' %}
+                                    <span class="morphic-badge morphic-badge-purple">Forwarded to Admin</span>
+                                {% elif ev.status == 'rejected' %}
+                                    <span class="morphic-badge morphic-badge-rose">Proposal Rejected</span>
+                                {% else %}
+                                    <span class="morphic-badge">{{ ev.status.capitalize() }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.4rem;">
+                                    {% if ev.status == 'upcoming' %}
+                                        <a href="{{ url_for('club_attendance_desk', event_id=ev.id) }}" class="morphic-btn" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; background: var(--status-emerald-bg); color: var(--status-emerald-text); border-color: var(--status-emerald-border);">
+                                            🚪 Gate QR
+                                        </a>
+                                        <a href="{{ url_for('club_export_attendance', event_id=ev.id) }}" class="morphic-btn" style="padding: 0.3rem 0.65rem; font-size: 0.75rem;">
+                                            📥 Excel
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('event_details', event_id=ev.id) }}" class="morphic-btn" style="padding: 0.3rem 0.65rem; font-size: 0.75rem;">
+                                            View
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="morphic-card" style="text-align: center; padding: 2.5rem;">
+            <p style="font-size: 2.2rem; margin-bottom: 0.4rem;">📝</p>
+            <p style="font-weight: 600; color: var(--text-secondary);">No events registered for {{ session.get('club_name') }} yet.</p>
+            {% if session.get('club_role') in ['leader', 'faculty'] %}
+                <a href="{{ url_for('club_create_event') }}" class="morphic-btn morphic-btn-primary" style="margin-top: 1rem;">
+                    Create First Event Proposal
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Club Members Summary -->
+<div>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
+            👥 Club Committee & Members
+        </h2>
+        <a href="{{ url_for('club_members') }}" style="font-size: 0.88rem; color: var(--rgcet-royal); font-weight: 700;">
+            Full Directory & QR Badges ➔
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+        {% for m in members[:4] %}
+            <div class="morphic-card" style="padding: 1.1rem; display: flex; align-items: center; gap: 0.8rem;">
+                <div class="user-desk-avatar" style="width: 38px; height: 38px; font-size: 1rem;">
+                    {{ m.name[0] }}
+                </div>
+                <div>
+                    <strong style="display: block; font-size: 0.92rem; color: var(--text-primary);">{{ m.name }}</strong>
+                    <span class="morphic-badge {% if m.role == 'faculty' %}morphic-badge-purple{% elif m.role == 'leader' %}morphic-badge-amber{% else %}morphic-badge-blue{% endif %}" style="font-size: 0.68rem; padding: 1px 6px;">
+                        {{ m.role.capitalize() }}
+                    </span>
+                    <small style="display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                        {{ m.member_code }}
+                    </small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

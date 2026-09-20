@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Propose New Event | {{ session.get('club_name') }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 780px; margin: 1.5rem auto;">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+        <div>
+            <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
+                Propose New Event
+            </h1>
+            <p class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">
+                ~ Host Club: <strong>{{ session.get('club_name') }}</strong> (Logged in as: {{ session.get('club_role').capitalize() }})
+            </p>
+        </div>
+        <a href="{{ url_for('club_events') }}" class="tactile-btn">
+            <span>🔙</span> Back to Events
+        </a>
+    </div>
+
+    <!-- Workflow Tip Box (Speech Bubble Style) -->
+    <div class="speech-bubble" style="margin-bottom: 1.8rem; background: var(--sticky-yellow); border-color: var(--sticky-yellow-border);">
+        <div style="display: flex; align-items: flex-start; gap: 0.8rem;">
+            <span style="font-size: 1.4rem;">💡</span>
+            <div>
+                {% if session.get('club_role') == 'leader' %}
+                    <strong style="color: #854D0E;">Club Leader Workflow:</strong>
+                    <p style="font-size: 0.88rem; color: #713F12; margin-top: 2px;">
+                        When you submit this form, your event proposal is automatically routed to your <strong>Club Faculty Advisor</strong> for initial review. Once approved by Faculty, it is sent to <strong>Central Administration</strong>. When Admin approves, it goes live on the Homepage & Calendar!
+                    </p>
+                {% else %}
+                    <strong style="color: #854D0E;">Faculty Advisor Workflow:</strong>
+                    <p style="font-size: 0.88rem; color: #713F12; margin-top: 2px;">
+                        As the Faculty Advisor, your submission goes directly to <strong>Central Administration</strong> for final approval. Once approved by Admin, it immediately displays on the Public Homepage & Calendar!
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="notebook-form" style="position: relative;">
+        <div class="sticky-tape" style="top: -12px;"></div>
+
+        <form method="POST" action="{{ url_for('club_create_event') }}" enctype="multipart/form-data">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem;">
+                
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Event Title <span style="color: red;">*</span></label>
+                    <input type="text" name="title" class="form-input" placeholder="e.g. HackRGCET 2026: 24-Hour AI & Web3 Hackathon" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category <span style="color: red;">*</span></label>
+                    <select name="category" class="form-select" required>
+                        <option value="" disabled selected>Select Category</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Campus Venue <span style="color: red;">*</span></label>
+                    <select name="venue_id" class="form-select" required>
+                        <option value="" disabled selected>Select Venue</option>
+                        {% for v in venues %}
+                            <option value="{{ v.id }}">{{ v.name }} ({{ v.building }} - Cap: {{ v.capacity }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Attendance Incharge</label>
+                    <select name="attendance_incharge_member_id" class="form-select">
+                        <option value="">Select later</option>
+                        {% for member in attendance_members %}
+                            <option value="{{ member.id }}">{{ member.name }} ({{ member.role }})</option>
+                        {% endfor %}
+                    </select>
+                    <small style="font-size: 0.75rem; color: var(--ink-pencil);">Only this member can open the event QR scanner.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Event Date <span style="color: red;">*</span></label>
+                    <input type="date" name="event_date" class="form-input" required>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 0.8rem;">
+                    <div style="flex: 1;">
+                        <label class="form-label">Start Time <span style="color: red;">*</span></label>
+                        <input type="time" name="start_time" class="form-input" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label">End Time <span style="color: red;">*</span></label>
+                        <input type="time" name="end_time" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Participant Capacity <span style="color: red;">*</span></label>
+                    <input type="number" name="capacity" class="form-input" min="5" max="2000" value="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Registration Fee (₹) <small>(0 = Free Pass)</small></label>
+                    <input type="number" name="fee" id="event_fee" class="form-input" min="0" step="1" value="0" oninput="toggleUpiField()">
+                </div>
+
+                <div class="form-group" id="upi-group" style="display: none;">
+                    <label class="form-label">Club UPI ID for Payments</label>
+                    <input type="text" name="upi_id" class="form-input" placeholder="e.g. rgcetclub@upi">
+                    <small style="font-size: 0.75rem; color: var(--ink-pencil);">Dynamic UPI QR code will be generated for student pass reservations.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Event Pamphlet / Poster Flyer</label>
+                    <input type="file" name="banner" class="form-input" accept="image/*">
+                    <small style="font-size: 0.75rem; color: var(--ink-pencil);">Upload JPG, PNG, or WEBP flyer image to be showcased on public open page.</small>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Event Pamphlet Description & Rules <span style="color: red;">*</span></label>
+                    <textarea name="description" rows="5" class="form-textarea" placeholder="Detailed outline of the event, eligibility, rounds, mentors, swag kits, certificates, and student instructions..." required></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 1rem;">
+                {% if session.get('club_role') == 'leader' %}
+                    Submit Proposal to Club Faculty Advisor ➔
+                {% else %}
+                    Forward Proposal to Central Administration ➔
+                {% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleUpiField() {
+    const fee = parseFloat(document.getElementById('event_fee').value) || 0;
+    document.getElementById('upi-group').style.display = fee > 0 ? 'block' : 'none';
+}
+</script>
+{% endblock %}

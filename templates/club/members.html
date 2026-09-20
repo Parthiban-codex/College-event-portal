@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Club Committee & Members | {{ session.get('club_name') }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+            <span class="bubble-pill bubble-blue">{{ session.get('club_name') }}</span>
+            <span class="bubble-pill bubble-amber">Authorized Roster</span>
+        </div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
+            Club Committee & Member Badges
+        </h1>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Each member is assigned a unique college member code & digital verification QR
+        </p>
+    </div>
+
+    <a href="{{ url_for('club_dashboard') }}" class="tactile-btn">
+        <span>🔙</span> Club Desk
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% for m in members %}
+        <div style="background: var(--paper-card); border: 2px solid var(--card-border); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--card-shadow); position: relative; display: flex; flex-direction: column;">
+            <div class="sticky-tape" style="top: -10px;"></div>
+
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                <div>
+                    <span class="bubble-pill {% if m.role == 'faculty' %}bubble-purple{% elif m.role == 'leader' %}bubble-amber{% elif m.role == 'coordinator' %}bubble-blue{% else %}bubble-green{% endif %}" style="font-size: 0.72rem; text-transform: uppercase;">
+                        {% if m.role == 'ex_leader' %}Ex-Leader / Coordinator{% else %}{{ m.role }}{% endif %}
+                    </span>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-top: 0.4rem;">
+                        {{ m.name }}
+                    </h3>
+                    <small style="color: var(--ink-pencil);">{{ m.department }}</small>
+                </div>
+
+                <!-- Unique Member Code Badge -->
+                <div style="text-align: right;">
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 800; background: rgba(30, 58, 138, 0.08); color: var(--rgcet-navy); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--rgcet-royal);">
+                        {{ m.member_code }}
+                    </span>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed var(--card-border); padding-top: 1rem; margin-top: auto;">
+                <div style="font-size: 0.8rem; color: var(--ink-pencil);">
+                    <div>📧 {{ m.email }}</div>
+                    <div>📞 {{ m.phone }}</div>
+                    <small style="color: var(--rgcet-royal); font-weight: 700; margin-top: 4px; display: block;">RGCET Authorized</small>
+                </div>
+
+                <!-- Member QR Code Image -->
+                {% if m.qr_code_image %}
+                    <img src="{{ url_for('static', filename='uploads/members/' + m.qr_code_image) }}" alt="{{ m.member_code }}" style="width: 68px; height: 68px; border: 1px solid var(--card-border); border-radius: 6px; padding: 2px; background: white;" title="Unique Member ID QR">
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

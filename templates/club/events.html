@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Club Events | {{ session.get('club_name') }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
+            {{ session.get('club_name') }} Events
+        </h1>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Manage proposals, gate attendance desks & deletion requests
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 0.8rem;">
+        {% if session.get('club_role') in ['leader', 'faculty'] %}
+            <a href="{{ url_for('club_create_event') }}" class="tactile-btn tactile-btn-primary">
+                <span>➕</span> Propose New Event
+            </a>
+        {% endif %}
+        <a href="{{ url_for('club_dashboard') }}" class="tactile-btn">
+            <span>🔙</span> Club Desk
+        </a>
+    </div>
+</div>
+
+{% if events %}
+    <div class="desk-table-wrap">
+        <table class="desk-table">
+            <thead>
+                <tr>
+                    <th>Event Details</th>
+                    <th>Category</th>
+                    <th>Date & Time</th>
+                    <th>Venue</th>
+                    <th>Registrations</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ev in events %}
+                    <tr>
+                        <td style="max-width: 240px;">
+                            <strong style="display: block; font-size: 0.95rem; color: var(--ink-black);">{{ ev.title }}</strong>
+                            <small style="color: var(--ink-pencil); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ ev.description }}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="bubble-pill bubble-blue" style="font-size: 0.72rem;">{{ ev.category }}</span>
+                        </td>
+                        <td>
+                            <div>{{ ev.event_date|datetimeformat('%a, %b %d, %Y') }}</div>
+                            <small style="color: var(--ink-pencil);">{{ ev.start_time|timeformat }} - {{ ev.end_time|timeformat }}</small>
+                        </td>
+                        <td>
+                            <div>{{ ev.venue_name or 'TBD' }}</div>
+                        </td>
+                        <td>
+                            <div><strong>{{ ev.registered_count or 0 }}</strong> / {{ ev.capacity }}</div>
+                            <small style="color: #15803D; font-weight: 700;">{{ ev.attended_count or 0 }} attended</small>
+                        </td>
+                        <td>
+                            {% if ev.status == 'upcoming' %}
+                                <span class="status-badge status-upcoming">● Live on Campus</span>
+                            {% elif ev.status == 'pending_faculty' %}
+                                <span class="status-badge status-pending_faculty">Waiting Faculty</span>
+                            {% elif ev.status == 'pending_admin' %}
+                                <span class="status-badge status-pending_admin">Waiting Admin</span>
+                            {% elif ev.status == 'rejected' %}
+                                <span class="status-badge status-rejected">Rejected</span>
+                            {% else %}
+                                <span class="status-badge">{{ ev.status }}</span>
+                            {% endif %}
+
+                            {% if ev.has_pending_deletion %}
+                                <div style="margin-top: 4px;">
+                                    <span class="bubble-pill bubble-rose" style="font-size: 0.65rem; padding: 1px 6px;">Deletion Pending Admin</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                {% if ev.status == 'upcoming' %}
+                                    {% if session.get('club_role') in ['faculty', 'leader'] or ev.attendance_incharge_member_id == session.get('user_id') %}
+                                    <a href="{{ url_for('club_attendance_desk', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: #DCFCE7; color: #166534; border-color: #86EFAC;" title="Gate QR Attendance">
+                                        🚪 QR Desk
+                                    </a>
+                                    <a href="{{ url_for('club_export_attendance', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;" title="Download Excel (.xlsx)">
+                                        📥 Excel
+                                    </a>
+                                    {% endif %}
+                                    {% if session.get('club_role') in ['leader', 'faculty'] and not ev.has_pending_deletion %}
+                                        <button type="button" class="tactile-btn tactile-btn-danger" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;" onclick="openDeletionModal({{ ev.id }}, '{{ ev.title|replace("'", "\\'") }}')">
+                                            🗑️ Request Deletion
+                                        </button>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{{ url_for('event_details', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;">
+                                        View Pamphlet
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 3rem; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+        <p style="font-size: 2.5rem;">📋</p>
+        <h3 style="font-weight: 800; margin-bottom: 0.5rem;">No Events Recorded for this Club</h3>
+        {% if session.get('club_role') in ['leader', 'faculty'] %}
+            <a href="{{ url_for('club_create_event') }}" class="tactile-btn tactile-btn-primary" style="margin-top: 1rem;">
+                Propose an Event Now
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- Deletion Request Modal -->
+<div id="deletionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="notebook-form" style="max-width: 500px; width: 90%; margin: auto; position: relative;">
+        <div class="sticky-tape" style="top: -10px;"></div>
+        
+        <h3 style="font-size: 1.3rem; font-weight: 800; color: #B91C1C; margin-bottom: 0.5rem;">
+            🗑️ Request Event Deletion
+        </h3>
+        <p style="font-size: 0.88rem; color: var(--ink-pencil); margin-bottom: 1.2rem;">
+            As per college policy, only Central Administration can remove an approved event. Please state the justification for requesting deletion:
+        </p>
+
+        <form id="deletionForm" method="POST" action="">
+            <div class="form-group">
+                <label class="form-label">Event to Delete:</label>
+                <input type="text" id="modalEventTitle" class="form-input" disabled style="font-weight: 700; background: rgba(0,0,0,0.03);">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Reason / Justification for Deletion: <span style="color: red;">*</span></label>
+                <textarea name="reason" rows="3" class="form-textarea" placeholder="e.g. Venue scheduling conflict, guest speaker unavailable, or rescheduled..." required></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1.2rem;">
+                <button type="button" class="tactile-btn" onclick="closeDeletionModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="tactile-btn tactile-btn-danger">
+                    Submit Request to Admin
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDeletionModal(eventId, eventTitle) {
+    const modal = document.getElementById('deletionModal');
+    const form = document.getElementById('deletionForm');
+    const titleInput = document.getElementById('modalEventTitle');
+    
+    form.action = `/club/events/${eventId}/request-deletion`;
+    titleInput.value = eventTitle;
+    modal.style.display = 'flex';
+}
+
+function closeDeletionModal() {
+    document.getElementById('deletionModal').style.display = 'none';
+}
+</script>
+{% endblock %}

@@ -1,59 +1,84 @@
 {% extends "base.html" %}
 
-{% block title %}Student Registration | CampusPulse{% endblock %}
+{% block title %}Register | RGCET Event Hub{% endblock %}
 
 {% block content %}
 <div style="max-width: 680px; margin: 1.5rem auto;">
-    <div class="notebook-form" style="position: relative;">
-
-        <div style="text-align: center; margin-bottom: 1.8rem;">
-            <span style="font-size: 2.2rem; display: inline-block; margin-bottom: 0.3rem;">🎓</span>
-            <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--ink-black);">Student Registration</h1>
-            <p class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">Enroll to claim digital passes, event certificates & workshop access</p>
+    <div class="morphic-card" style="padding: 2.6rem 2.2rem;">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem;">
+                <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET" style="width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1));">
+            </div>
+            <h1 style="font-family: var(--font-heading); font-size: 1.65rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.015em;">
+                RGCET Portal Registration
+            </h1>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                Register as an enrolled student or request credentials for an authorized campus club
+            </p>
         </div>
 
         <form method="POST" action="{{ url_for('register') }}">
+            <!-- Registration Type Segmented Control -->
+            <div class="form-group" style="text-align: center; margin-bottom: 1.8rem;">
+                <label class="form-label" style="margin-bottom: 0.6rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">
+                    I want to register as:
+                </label>
+                <div style="display: flex; justify-content: center; gap: 0.8rem;">
+                    <label class="morphic-btn" style="padding: 0.5rem 1.2rem; cursor: pointer;">
+                        <input type="radio" name="reg_type" value="student" id="reg-student" checked onchange="toggleRegForm()" style="margin-right: 6px; accent-color: var(--rgcet-royal);">
+                        <span>🎓 Student</span>
+                    </label>
+                    <label class="morphic-btn" style="padding: 0.5rem 1.2rem; cursor: pointer;">
+                        <input type="radio" name="reg_type" value="club" id="reg-club" onchange="toggleRegForm()" style="margin-right: 6px; accent-color: var(--rgcet-royal);">
+                        <span>👥 Club Member / Faculty</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Form Fields Grid -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
                 
                 <div class="form-group">
-                    <label class="form-label">Full Name <span style="color: red;">*</span></label>
-                    <input type="text" name="name" class="form-input" placeholder="e.g. Rahul Sharma" required>
+                    <label class="form-label">Full Name <span style="color: var(--status-rose-text);">*</span></label>
+                    <input type="text" name="name" class="morphic-input" placeholder="e.g. Rahul Sharma" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">College Email <span style="color: red;">*</span></label>
-                    <input type="email" name="email" class="form-input" placeholder="e.g. rahul@student.edu" required>
+                    <label class="form-label">College Email Address <span style="color: var(--status-rose-text);">*</span></label>
+                    <input type="email" name="email" class="morphic-input" placeholder="e.g. rahul@rgcet.edu" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Roll Number / Student ID <span style="color: red;">*</span></label>
-                    <input type="text" name="roll_number" class="form-input" placeholder="e.g. 23CS105" required style="font-family: var(--font-mono); text-transform: uppercase;">
+                    <label class="form-label">Phone Number <span style="color: var(--status-rose-text);">*</span></label>
+                    <input type="tel" name="phone" class="morphic-input" placeholder="e.g. 9876543210" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Phone Number <span style="color: red;">*</span></label>
-                    <input type="tel" name="phone" class="form-input" placeholder="e.g. 9876543210" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Department <span style="color: red;">*</span></label>
-                    <select name="department" class="form-select" required>
+                    <label class="form-label">Department <span style="color: var(--status-rose-text);">*</span></label>
+                    <select name="department" class="morphic-input" required>
                         <option value="" disabled selected>Select Department</option>
-                        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
-                        <option value="Information Technology">Information Technology</option>
-                        <option value="Artificial Intelligence & DS">Artificial Intelligence & DS</option>
-                        <option value="Electronics & Communication">Electronics & Communication</option>
-                        <option value="Electrical & Electronics">Electrical & Electronics</option>
+                        <option value="Computer Science & Engineering">Computer Science & Engineering (CSE)</option>
+                        <option value="Information Technology">Information Technology (IT)</option>
+                        <option value="Artificial Intelligence & DS">Artificial Intelligence & DS (AI&DS)</option>
+                        <option value="Electronics & Communication">Electronics & Communication (ECE)</option>
+                        <option value="Electrical & Electronics">Electrical & Electronics (EEE)</option>
                         <option value="Mechanical Engineering">Mechanical Engineering</option>
                         <option value="Civil Engineering">Civil Engineering</option>
-                        <option value="Management Studies (MBA)">Management Studies (MBA)</option>
                         <option value="Biotechnology">Biotechnology</option>
+                        <option value="Management Studies (MBA)">Management Studies (MBA)</option>
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Year of Study <span style="color: red;">*</span></label>
-                    <select name="year_of_study" class="form-select" required>
+                <!-- Student Specific Fields -->
+                <div id="student-roll-group" class="form-group">
+                    <label class="form-label">Roll Number / Student ID <span style="color: var(--status-rose-text);">*</span></label>
+                    <input type="text" name="roll_number" id="reg-roll" class="morphic-input" placeholder="e.g. 23CS105" style="text-transform: uppercase;">
+                </div>
+
+                <div id="student-year-group" class="form-group">
+                    <label class="form-label">Year of Study <span style="color: var(--status-rose-text);">*</span></label>
+                    <select name="year_of_study" id="reg-year" class="morphic-input">
                         <option value="" disabled selected>Select Year</option>
                         <option value="1st Year">1st Year</option>
                         <option value="2nd Year">2nd Year</option>
@@ -63,25 +88,61 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Password <span style="color: red;">*</span></label>
-                    <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                <!-- Club Specific Fields -->
+                <div id="club-select-group" class="form-group" style="display: none;">
+                    <label class="form-label">Select Campus Club <span style="color: var(--status-rose-text);">*</span></label>
+                    <select name="club_id" id="reg-club-id" class="morphic-input">
+                        <option value="" disabled selected>Select Club</option>
+                        {% for club in clubs %}
+                            <option value="{{ club.id }}">{{ club.name }} ({{ club.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="club-role-group" class="form-group" style="display: none;">
+                    <label class="form-label">Select Club Position <span style="color: var(--status-rose-text);">*</span></label>
+                    <select name="club_role" id="reg-club-role" class="morphic-input">
+                        <option value="volunteer" selected>Volunteer (Member Assistance)</option>
+                        <option value="coordinator">Coordinator (Attendance & Logistics)</option>
+                        <option value="leader">Leader / President (Create & Propose Events)</option>
+                        <option value="faculty">Faculty Advisor (Review & Forward to Admin)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Confirm Password <span style="color: red;">*</span></label>
-                    <input type="password" name="confirm_password" class="form-input" placeholder="••••••••" required>
+                    <label class="form-label">Password <span style="color: var(--status-rose-text);">*</span></label>
+                    <input type="password" name="password" class="morphic-input" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password <span style="color: var(--status-rose-text);">*</span></label>
+                    <input type="password" name="confirm_password" class="morphic-input" placeholder="••••••••" required>
                 </div>
             </div>
 
-            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.85rem 1rem; font-size: 1rem; margin-top: 1rem;">
+            <button type="submit" class="morphic-btn morphic-btn-primary" style="width: 100%; padding: 0.85rem 1rem; font-size: 0.95rem; margin-top: 1.2rem;">
                 Complete Registration ➔
             </button>
         </form>
 
-        <div style="text-align: center; margin-top: 1.4rem; font-size: 0.88rem; color: var(--ink-pencil);">
-            Already registered? <a href="{{ url_for('login') }}" style="color: var(--ink-pen-blue); font-weight: 700; text-decoration: underline;">Sign In here</a>
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.86rem; color: var(--text-secondary);">
+            Already have an account? <a href="{{ url_for('login') }}" style="color: var(--rgcet-royal); font-weight: 700;">Sign In here</a>
         </div>
     </div>
 </div>
+
+<script>
+function toggleRegForm() {
+    const isClub = document.getElementById('reg-club').checked;
+    
+    document.getElementById('student-roll-group').style.display = isClub ? 'none' : 'block';
+    document.getElementById('student-year-group').style.display = isClub ? 'none' : 'block';
+    document.getElementById('reg-roll').required = !isClub;
+    
+    document.getElementById('club-select-group').style.display = isClub ? 'block' : 'none';
+    document.getElementById('club-role-group').style.display = isClub ? 'block' : 'none';
+    const clubSelect = document.getElementById('reg-club-id');
+    if (clubSelect) clubSelect.required = isClub;
+}
+</script>
 {% endblock %}

@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CampusPulse | College Student Event Planner{% endblock %}</title>
-    
-  
+    <title>{% block title %}RGCET Event Hub | Rajiv Gandhi College of Engineering & Technology{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/rgcet_logo.png') }}">
     
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-
-    
-    <header class="desk-ruler-nav paper-nav">
-        <a href="{{ url_for('index') }}" class="nav-brand">
-            <span class="brand-notebook-icon">📄</span>
-            <span class="brand-pen-logo">Campus<span>Pulse</span></span>
-            <span class="hand-note" style="font-size: 1.1rem; color: var(--ink-pencil); margin-left: 4px;">~ Event Ledger</span>
+    <header class="morphic-navbar">
+        <a href="{{ url_for('index') }}" class="nav-brand-rgcet">
+            <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET Emblem" class="rgcet-logo-img">
+            <div class="brand-college-text">
+                <span class="brand-name-main">RAJIV GANDHI</span>
+                <span class="brand-name-sub">College of Engineering & Technology • Puducherry</span>
+            </div>
         </a>
+
         <nav>
             <ul class="nav-links">
                 <li>
                     <a href="{{ url_for('index') }}" class="nav-tab-btn {% if request.endpoint == 'index' %}active{% endif %}">
-                        <span>📋</span> Events
+                        <span>📋</span> Events & Pamphlets
                     </a>
                 </li>
                 <li>
@@ -37,7 +36,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('student_notifications') if session.get('role') == 'student' else url_for('admin_announcements') if session.get('role') == 'admin' else url_for('index') }}" class="nav-tab-btn">
+                    <a href="{{ url_for('index') }}#announcements" class="nav-tab-btn">
                         <span>📌</span> Notice Board
                     </a>
                 </li>
@@ -48,47 +47,111 @@
                         <span>🎫</span> My Passes
                     </a>
                 </li>
+
+                {% elif session.get('role') == 'club' %}
+                <li>
+                    <a href="{{ url_for('club_dashboard') }}" class="nav-tab-btn {% if 'club' in request.endpoint and request.endpoint != 'club_events' and request.endpoint != 'club_approvals' %}active{% endif %}" style="color: var(--rgcet-royal); font-weight: 700;">
+                        <span>👥</span> {{ session.get('club_name', 'Club Desk') }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('club_events') }}" class="nav-tab-btn {% if request.endpoint == 'club_events' %}active{% endif %}">
+                        <span>📝</span> Events
+                    </a>
+                </li>
+                {% if session.get('club_role') == 'faculty' %}
+                <li>
+                    <a href="{{ url_for('club_approvals') }}" class="nav-tab-btn {% if request.endpoint == 'club_approvals' %}active{% endif %}" style="position: relative;">
+                        <span>📥</span> Approvals
+                        {% if pending_faculty_count > 0 %}
+                            <span class="morphic-badge morphic-badge-rose" style="font-size: 0.7rem; padding: 1px 6px; margin-left: 3px;">{{ pending_faculty_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
+
                 {% elif session.get('role') == 'admin' %}
                 <li>
-                    <a href="{{ url_for('admin_dashboard') }}" class="nav-tab-btn {% if 'admin' in request.endpoint %}active{% endif %}" style="color: #d97706; font-weight: 700;">
-                        <span>🛠️</span> Organizer Desk
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-tab-btn {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" style="font-weight: 800;">
+                        <span>🛠️</span> Central Desk
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_events') }}" class="nav-tab-btn {% if request.endpoint in ['admin_events', 'admin_create_event', 'admin_edit_event'] %}active{% endif %}">
+                        <span>🎪</span> Events
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_create_club') }}" class="nav-tab-btn {% if request.endpoint == 'admin_create_club' %}active{% endif %}">
+                        <span>🏫</span> New Club
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_venues') }}" class="nav-tab-btn {% if request.endpoint == 'admin_venues' %}active{% endif %}">
+                        <span>📍</span> Places
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_approvals') }}" class="nav-tab-btn {% if request.endpoint == 'admin_approvals' %}active{% endif %}" style="position: relative;">
+                        <span>✅</span> Approvals
+                        {% if pending_admin_count > 0 %}
+                            <span class="morphic-badge morphic-badge-rose" style="font-size: 0.7rem; padding: 1px 6px; margin-left: 3px;">{{ pending_admin_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_deletion_requests') }}" class="nav-tab-btn {% if request.endpoint == 'admin_deletion_requests' %}active{% endif %}" style="position: relative;">
+                        <span>🗑️</span> Deletions
+                        {% if pending_deletion_count > 0 %}
+                            <span class="morphic-badge morphic-badge-amber" style="font-size: 0.7rem; padding: 1px 6px; margin-left: 3px;">{{ pending_deletion_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_participants') }}" class="nav-tab-btn {% if request.endpoint == 'admin_participants' %}active{% endif %}">
+                        <span>📊</span> Attendees
                     </a>
                 </li>
                 {% endif %}
             </ul>
         </nav>
 
-    
         <div style="display: flex; align-items: center; gap: 0.8rem;">
-            <!-- Day Paper / Night Kraft Paper Mode Switch -->
-            <button id="deskLampToggle" class="desk-lamp-btn" type="button" title="Toggle Day Paper / Night Kraft Paper">
-                <span class="lamp-bulb"></span>
-                <span id="deskLampLabel">Day Paper</span>
+         
+            <button id="themeToggleBtn" class="morphic-theme-toggle" type="button" title="Toggle Minimalist Day / Night Mode">
+                <span class="toggle-indicator-dot"></span>
+                <span id="themeToggleLabel">Day Frost</span>
             </button>
 
             {% if session.get('user_id') %}
                 <div class="user-desk-badge">
                     <span class="user-desk-avatar">{{ session.get('name', 'U')[0] }}</span>
                     <span>{{ session.get('name') }}</span>
+                    
                     {% if session.get('role') == 'admin' %}
-                        <small style="background: rgba(245, 158, 11, 0.15); color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Admin</small>
+                        <span class="morphic-badge morphic-badge-blue" style="font-size: 0.72rem; padding: 2px 7px;">Admin</span>
+                    {% elif session.get('role') == 'club' %}
+                        <span class="morphic-badge morphic-badge-amber" style="font-size: 0.72rem; padding: 2px 7px;">{% if session.get('club_role') == 'ex_leader' %}Ex-Leader / Coordinator{% else %}{{ session.get('club_role', 'Club').capitalize() }}{% endif %}</span>
+                    {% else %}
+                        <span class="morphic-badge morphic-badge-emerald" style="font-size: 0.72rem; padding: 2px 7px;">Student</span>
                     {% endif %}
-                    <a href="{{ url_for('logout') }}" title="Sign Out" style="color: var(--stamp-red); margin-left: 4px; font-weight: 800;">✕</a>
+                    <a href="{{ url_for('profile_settings') }}" class="profile-button">Profile</a>
+                    <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
                 </div>
             {% else %}
-                <a href="{{ url_for('login') }}" class="tactile-btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">Sign In</a>
-                <a href="{{ url_for('register') }}" class="tactile-btn tactile-btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">Register</a>
+                <a href="{{ url_for('login') }}" class="morphic-btn" style="padding: 0.45rem 1.05rem; font-size: 0.85rem;">Sign In</a>
+                <a href="{{ url_for('register') }}" class="morphic-btn morphic-btn-primary" style="padding: 0.45rem 1.05rem; font-size: 0.85rem;">Register</a>
             {% endif %}
         </div>
     </header>
-    <main class="desk-workspace paper-workspace">
-        <div class="notebook-container paper-sheet">
-            <div class="notebook-page paper-content">
+    <main class="desk-workspace">
+        <div class="morphic-page-container">
+            <div class="morphic-page-body">
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
                             <div class="flash-alert alert-{{ 'success' if category == 'success' else 'danger' if category in ['danger', 'error'] else 'warning' }}">
-                                <span>📌</span>
+                                <span>🔔</span>
                                 <span>{{ message }}</span>
                             </div>
                         {% endfor %}
@@ -96,18 +159,48 @@
                 {% endwith %}
 
                 {% block content %}{% endblock %}
-
             </div>
         </div>
 
-
-        <footer style="text-align: center; margin-top: 2rem; color: var(--ink-pencil); font-size: 0.85rem;">
-            <p>📄 <strong>CampusPulse</strong> • College Student Event Planner • Made by Parthiban</p>
-            <p class="hand-note" style="margin-top: 0.3rem; font-size: 1.15rem;">Crumpled paper notes, verified passes & campus moments</p>
+        
+        <footer style="text-align: center; margin-top: 2.2rem; color: var(--text-secondary); font-size: 0.85rem;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+                <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET" style="width: 22px; height: 22px; object-fit: contain;">
+                <p><strong>Rajiv Gandhi College of Engineering and Technology (RGCET)</strong> • Puducherry</p>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.02em;">
+                Autonomous Institution • Affiliated to Pondicherry University • Accredited by NAAC & NBA
+            </p>
         </footer>
     </main>
+    <script>
+    (function() {
+        const toggleBtn = document.getElementById('themeToggleBtn');
+        const themeLabel = document.getElementById('themeToggleLabel');
+        const html = document.documentElement;
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        const savedTheme = localStorage.getItem('rgcet_theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        updateLabel(savedTheme);
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('rgcet_theme', next);
+                updateLabel(next);
+            });
+        }
+
+        function updateLabel(theme) {
+            if (themeLabel) {
+                themeLabel.textContent = theme === 'dark' ? 'Obsidian Glow' : 'Day Frost';
+            }
+        }
+    })();
+    </script>
+    
     {% block extra_scripts %}{% endblock %}
 
 </body>

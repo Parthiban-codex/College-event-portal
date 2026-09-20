@@ -1,38 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}Campus Venues Ledger | Organizer Desk{% endblock %}
+{% block title %}Campus Venues Ledger | Central Administration{% endblock %}
 
 {% block content %}
-<div class="notebook-tabs-bar">
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
     <div>
-        <h1 class="notebook-title">
-            <span class="pen-accent-icon">🏛️</span>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
             Campus Venues & Auditoriums
         </h1>
-        <p class="hand-note" style="margin-top: 4px;">~ Register auditoriums, hack labs, seminar halls & seat capacities</p>
-    </div>
-
-    <div>
-        <span class="rubber-stamp stamp-verified" style="font-size: 0.8rem;">FACILITIES DIRECTORY</span>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Register auditoriums, labs, open air theatres & seat quotas (Admin only)
+        </p>
     </div>
 </div>
 
-<!-- Desk Navigation Divider Tabs -->
+<!-- Desk Navigation Divider Tabs (QR Scanner removed from admin) -->
 <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
     <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
     <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
+    <a href="{{ url_for('admin_approvals') }}" class="tactile-btn">📥 Endorsements</a>
+    <a href="{{ url_for('admin_deletion_requests') }}" class="tactile-btn">🗑️ Deletion Requests</a>
     <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
-    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
-    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
-    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
-    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
-    <a href="{{ url_for('admin_venues') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">🏛️ Campus Venues</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Attendees & Excel</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Notices</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn tactile-btn-primary">🏛️ Venues</a>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;">
     
     <!-- Add Venue Form -->
-    <div class="notebook-form" style="border: 1.5px solid var(--card-border);">
+    <div class="notebook-form">
         <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
             <span>✍️</span> Register Campus Venue
         </h2>
@@ -40,55 +37,58 @@
         <form action="{{ url_for('admin_venues') }}" method="POST">
             <div class="form-group">
                 <label class="form-label">Venue / Hall Name <span style="color: red;">*</span></label>
-                <input type="text" name="name" class="form-input" placeholder="e.g. Sir Visvesvaraya Grand Auditorium" required>
+                <input type="text" name="name" class="form-input" placeholder="e.g. Dr. APJ Abdul Kalam Grand Auditorium" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Building / Campus Wing <span style="color: red;">*</span></label>
-                <input type="text" name="building" class="form-input" placeholder="e.g. Main Academic Block" required>
+                <label class="form-label">Building / Block <span style="color: red;">*</span></label>
+                <input type="text" name="building" class="form-input" placeholder="e.g. Main Academic Block A, RGCET" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Seating Capacity <span style="color: red;">*</span></label>
-                <input type="number" name="capacity" class="form-input" min="10" max="10000" value="150" required>
+                <input type="number" name="capacity" class="form-input" min="10" max="5000" value="200" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Facilities & Location Directions</label>
-                <textarea name="location_details" class="form-textarea" rows="3" placeholder="Projector, audio system, Wi-Fi, floor details..."></textarea>
+                <label class="form-label">Location / Gate Details</label>
+                <textarea name="location_details" rows="3" class="form-textarea" placeholder="e.g. 2nd Floor, Central Wing, Projector & Sound System equipped..."></textarea>
             </div>
 
-            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.8rem;">
-                + Save Venue to Campus Directory
+            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.75rem;">
+                + Save Campus Venue
             </button>
         </form>
     </div>
 
     <!-- Existing Venues List -->
     <div>
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1.2rem;">
-            📋 Registered Venues ({{ venues|length }})
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--ink-black); margin-bottom: 1rem;">
+            Registered Facilities ({{ venues|length }})
         </h2>
 
         <div style="display: flex; flex-direction: column; gap: 1rem;">
             {% for v in venues %}
-                <div style="background: var(--paper-card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 1.4rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div style="background: var(--paper-card); border: 2px solid var(--card-border); border-radius: var(--radius-md); padding: 1.2rem; box-shadow: var(--card-shadow);">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
-                        <div>
-                            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--ink-black); margin-bottom: 2px;">{{ v.name }}</h3>
-                            <small style="color: var(--ink-pen-blue); font-weight: 700;">📍 {{ v.building }}</small>
-                        </div>
-                        <span class="rubber-stamp stamp-verified" style="font-size: 0.7rem;">
-                            CAPACITY: {{ v.capacity }} SEATS
+                        <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--rgcet-navy);">
+                            {{ v.name }}
+                        </h3>
+                        <span class="bubble-pill bubble-blue" style="font-size: 0.72rem;">
+                            {{ v.capacity }} Seats
                         </span>
                     </div>
 
-                    <p style="font-size: 0.88rem; color: var(--ink-pencil); margin-bottom: 0.6rem; line-height: 1.4;">
-                        {{ v.location_details or 'Standard campus academic and event facilities.' }}
+                    <p style="font-size: 0.85rem; color: var(--ink-pencil); margin-bottom: 0.4rem;">
+                        🏢 {{ v.building }}
                     </p>
-
-                    <div style="font-size: 0.78rem; color: var(--ink-faint); font-family: var(--font-mono); border-top: 1px dashed var(--card-border); padding-top: 0.5rem;">
-                        Total Events Hosted: <strong>{{ v.total_events or 0 }}</strong>
+                    {% if v.location_details %}
+                        <small style="display: block; font-size: 0.8rem; color: var(--ink-pencil); background: rgba(0,0,0,0.02); padding: 6px; border-radius: 4px;">
+                            📍 {{ v.location_details }}
+                        </small>
+                    {% endif %}
+                    <div style="margin-top: 0.6rem; font-size: 0.75rem; font-weight: 700; color: var(--rgcet-royal);">
+                        {{ v.total_events or 0 }} events hosted here
                     </div>
                 </div>
             {% endfor %}

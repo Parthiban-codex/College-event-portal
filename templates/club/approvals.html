@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Review & Approvals | {{ session.get('club_name') }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
+            Faculty Review & Endorsements
+        </h1>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Review proposals from Club Leader before forwarding to Central Administration
+        </p>
+    </div>
+
+    <a href="{{ url_for('club_dashboard') }}" class="tactile-btn">
+        <span>🔙</span> Club Desk
+    </a>
+</div>
+
+{% if pending_events %}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for ev in pending_events %}
+            <div style="background: var(--paper-card); border: 2px solid var(--card-border); border-radius: var(--radius-md); padding: 1.6rem; box-shadow: var(--card-shadow); position: relative;">
+                <div class="sticky-tape" style="top: -10px;"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+                            <span class="bubble-pill bubble-blue">{{ ev.category }}</span>
+                            <span class="status-badge status-pending_faculty">Pending Your Review</span>
+                        </div>
+                        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black);">
+                            {{ ev.title }}
+                        </h2>
+                        <small style="color: var(--ink-pencil);">
+                            Proposed by: <strong>{{ ev.creator_name }}</strong> ({{ ev.creator_role.capitalize() }}) • Submitted on {{ ev.created_at|datetimeformat('%b %d, %Y') }}
+                        </small>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <span style="font-size: 1.2rem; font-weight: 800; color: {% if ev.fee == 0 %}#166534{% else %}#D97706{% endif %};">
+                            {% if ev.fee == 0 %}FREE PASS{% else %}₹{{ "%.0f"|format(ev.fee) }}{% endif %}
+                        </span>
+                        <div style="font-size: 0.8rem; color: var(--ink-pencil);">Capacity: {{ ev.capacity }} seats</div>
+                    </div>
+                </div>
+
+                <!-- Event Details Box -->
+                <div style="background: rgba(0,0,0,0.02); border: 1px dashed var(--card-border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.2rem; font-size: 0.9rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; margin-bottom: 0.8rem; font-weight: 600;">
+                        <div>📅 Date: <strong>{{ ev.event_date|datetimeformat('%a, %b %d, %Y') }}</strong></div>
+                        <div>⏰ Time: <strong>{{ ev.start_time|timeformat }} - {{ ev.end_time|timeformat }}</strong></div>
+                        <div>📍 Venue: <strong>{{ ev.venue_name }} ({{ ev.venue_building }})</strong></div>
+                    </div>
+                    <p style="color: var(--ink-pencil); line-height: 1.5;">
+                        {{ ev.description }}
+                    </p>
+                </div>
+
+                <!-- Actions: Approve & Forward vs Reject -->
+                <form method="POST" action="" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--card-border); padding-top: 1rem;">
+                    <div style="flex: 1; min-width: 260px;">
+                        <label class="form-label" style="font-size: 0.82rem;">Faculty Advisor Remarks (Optional):</label>
+                        <input type="text" name="remarks" class="form-input" placeholder="e.g. Recommended for campus tech week. Venue approved.">
+                    </div>
+
+                    <div style="display: flex; gap: 0.6rem;">
+                        <button type="submit" formaction="{{ url_for('club_review_action', event_id=ev.id, action='reject') }}" class="tactile-btn tactile-btn-danger" onclick="return confirm('Are you sure you want to reject this event proposal?');">
+                            ✕ Reject Proposal
+                        </button>
+                        <button type="submit" formaction="{{ url_for('club_review_action', event_id=ev.id, action='forward_to_admin') }}" class="tactile-btn tactile-btn-primary">
+                            ✓ Approve & Forward to Admin ➔
+                        </button>
+                    </div>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 3.5rem; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+        <p style="font-size: 3rem;">✅</p>
+        <h3 style="font-weight: 800; font-size: 1.3rem; margin-bottom: 0.5rem;">All Caught Up!</h3>
+        <p style="color: var(--ink-pencil);">There are no pending event proposals waiting for Faculty review right now.</p>
+        <a href="{{ url_for('club_dashboard') }}" class="tactile-btn" style="margin-top: 1rem;">Back to Club Desk</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Settings | RGCET Event Hub{% endblock %}
+
+{% block content %}
+<div class="simple-section" style="max-width: 680px; margin: 0 auto;">
+    <p class="simple-label">ACCOUNT SETTINGS</p>
+    <h1>Profile Settings</h1>
+    <p class="simple-empty">Update your details and password any time.</p>
+
+    <form method="post" style="margin-top: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label" for="profile-name">Name</label>
+            <input class="morphic-input" id="profile-name" name="name" value="{{ user.name }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="profile-email">Email</label>
+            <input class="morphic-input" type="email" id="profile-email" name="email" value="{{ user.email }}" required>
+        </div>
+        {% if role != 'admin' %}
+        <div class="form-group">
+            <label class="form-label" for="profile-phone">Phone</label>
+            <input class="morphic-input" id="profile-phone" name="phone" value="{{ user.phone }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="profile-department">Department</label>
+            <input class="morphic-input" id="profile-department" name="department" value="{{ user.department }}" required>
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <label class="form-label" for="profile-password">New Password</label>
+            <input class="morphic-input" type="password" id="profile-password" name="new_password" minlength="6" placeholder="Leave blank to keep current password">
+        </div>
+        <button class="morphic-btn morphic-btn-primary" type="submit">Save Profile</button>
+    </form>
+</div>
+{% endblock %}

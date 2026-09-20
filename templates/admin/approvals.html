@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Event Approval Queue | Central Administration{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
+            Event Approvals & Endorsements
+        </h1>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Review club events endorsed by Faculty Advisors • Approving publishes instantly to Homepage & Calendar
+        </p>
+    </div>
+
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">
+        <span>🔙</span> Central Desk
+    </a>
+</div>
+
+{% if pending_events %}
+    <div style="display: flex; flex-direction: column; gap: 1.6rem;">
+        {% for ev in pending_events %}
+            <div style="background: var(--paper-card); border: 2px solid var(--card-border); border-radius: var(--radius-md); padding: 1.6rem; box-shadow: var(--card-shadow); position: relative;">
+                <div class="sticky-tape" style="top: -10px;"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+                            <span class="bubble-pill bubble-blue">{{ ev.club_name }}</span>
+                            <span class="bubble-pill bubble-purple">{{ ev.category }}</span>
+                            <span class="status-badge status-pending_admin">Awaiting Central Approval</span>
+                        </div>
+                        <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black);">
+                            {{ ev.title }}
+                        </h2>
+                        <small style="color: var(--ink-pencil);">
+                            Proposed by: <strong>{{ ev.creator_name }}</strong> ({{ ev.creator_role.capitalize() }}) • Endorsed on {{ ev.faculty_approved_at|datetimeformat('%b %d, %Y') if ev.faculty_approved_at else 'Direct Faculty Submission' }}
+                        </small>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <span style="font-size: 1.25rem; font-weight: 800; color: {% if ev.fee == 0 %}#166534{% else %}#D97706{% endif %};">
+                            {% if ev.fee == 0 %}FREE PASS{% else %}₹{{ "%.0f"|format(ev.fee) }}{% endif %}
+                        </span>
+                        <div style="font-size: 0.8rem; color: var(--ink-pencil);">Capacity: {{ ev.capacity }} seats</div>
+                    </div>
+                </div>
+
+                <!-- Event Details & Faculty Remarks -->
+                <div style="background: rgba(30, 58, 138, 0.03); border: 1.5px dashed var(--rgcet-royal); border-radius: var(--radius-sm); padding: 1.1rem; margin-bottom: 1.2rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem; margin-bottom: 0.8rem; font-size: 0.92rem; font-weight: 600;">
+                        <div>📅 Date: <strong>{{ ev.event_date|datetimeformat('%a, %b %d, %Y') }}</strong></div>
+                        <div>⏰ Time: <strong>{{ ev.start_time|timeformat }} - {{ ev.end_time|timeformat }}</strong></div>
+                        <div>📍 Venue: <strong>{{ ev.venue_name }} ({{ ev.venue_building }})</strong></div>
+                    </div>
+                    <p style="color: var(--ink-pencil); line-height: 1.5; font-size: 0.9rem; margin-bottom: 0.8rem;">
+                        {{ ev.description }}
+                    </p>
+                    {% if ev.faculty_remarks %}
+                        <div style="border-top: 1px dashed var(--card-border); padding-top: 0.6rem; font-size: 0.85rem; color: #1E40AF;">
+                            💬 <strong>Faculty Advisor Remarks:</strong> "{{ ev.faculty_remarks }}"
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Admin Action Form -->
+                <form method="POST" action="" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--card-border); padding-top: 1rem;">
+                    <div style="flex: 1; min-width: 260px;">
+                        <label class="form-label" style="font-size: 0.82rem;">Central Admin Remarks (Optional):</label>
+                        <input type="text" name="remarks" class="form-input" placeholder="e.g. Approved by Dean Academics. Venue reserved.">
+                    </div>
+
+                    <div style="display: flex; gap: 0.6rem;">
+                        <button type="submit" formaction="{{ url_for('admin_review_action', event_id=ev.id, action='reject') }}" class="tactile-btn tactile-btn-danger" onclick="return confirm('Reject this event proposal?');">
+                            ✕ Reject Proposal
+                        </button>
+                        <button type="submit" formaction="{{ url_for('admin_review_action', event_id=ev.id, action='approve') }}" class="tactile-btn tactile-btn-primary" style="background: #15803D; border-color: #15803D;">
+                            ✓ Approve & Publish to Homepage ➔
+                        </button>
+                    </div>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 4rem; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+        <p style="font-size: 3rem;">✅</p>
+        <h3 style="font-weight: 800; font-size: 1.35rem; margin-bottom: 0.5rem;">No Pending Endorsements</h3>
+        <p style="color: var(--ink-pencil);">All club event proposals have been reviewed and processed.</p>
+        <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn" style="margin-top: 1rem;">Back to Central Desk</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,9 +1,13 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'campus-notebook-desk-secret-key-2026'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'rgcet-campus-notebook-desk-secret-key-2026'
     MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'localhost'
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
-    MYSQL_PASSWORD = os.environ.get("pASS") 
+    MYSQL_PASSWORD = os.environ.get("pASS") or os.environ.get("MYSQL_PASSWORD") or 'parthiban'
     MYSQL_DB = os.environ.get('MYSQL_DB') or 'college_event_planner'
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT') or 3306)
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))

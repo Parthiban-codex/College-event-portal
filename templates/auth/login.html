@@ -1,80 +1,93 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In | CampusPulse{% endblock %}
+{% block title %}Sign In | RGCET Event Hub{% endblock %}
 
 {% block content %}
-<div style="max-width: 480px; margin: 2rem auto;">
+<div style="max-width: 520px; margin: 2rem auto;">
     
-    <!-- Paper Card Login Form -->
-    <div class="notebook-form" style="position: relative;">
-
-        <div style="text-align: center; margin-bottom: 1.8rem;">
-            <span style="font-size: 2.2rem; display: inline-block; margin-bottom: 0.3rem;">🔑</span>
-            <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--ink-black);">Account Sign In</h1>
-            <p class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">Enter your student or organizer credentials</p>
+    <!-- Frosted Glass Morphic Login Card -->
+    <div class="morphic-card" style="padding: 2.6rem 2.2rem;">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem;">
+                <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET" style="width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1));">
+            </div>
+            <h1 style="font-family: var(--font-heading); font-size: 1.65rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.015em;">
+                RGCET Portal Sign In
+            </h1>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                Select your role to access your authorized campus portal
+            </p>
         </div>
 
         <form method="POST" action="{{ url_for('login') }}">
             
-            <!-- User Role Selector Chips -->
-            <div class="form-group" style="text-align: center;">
-                <label class="form-label" style="margin-bottom: 0.6rem;">Select Your Role</label>
-                <div style="display: flex; justify-content: center; gap: 1rem;">
-                    <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
-                        <input type="radio" name="user_type" value="student" id="role-student" checked style="accent-color: var(--ink-pen-blue);">
+            <!-- User Type Selector Segmented Tabs -->
+            <div class="form-group" style="text-align: center; margin-bottom: 1.5rem;">
+                <label class="form-label" style="margin-bottom: 0.6rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">
+                    Select Portal Role
+                </label>
+                <div style="display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <label class="morphic-btn" style="padding: 0.45rem 1rem; font-size: 0.84rem; cursor: pointer;">
+                        <input type="radio" name="user_type" value="student" id="role-student" checked onchange="handleRoleSwitch()" style="margin-right: 5px; accent-color: var(--rgcet-royal);">
                         <span>🎓 Student</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-weight: 700; font-size: 0.95rem;">
-                        <input type="radio" name="user_type" value="admin" id="role-admin" style="accent-color: #d97706;">
-                        <span>🛠️ Organizer / Faculty</span>
+                    <label class="morphic-btn" style="padding: 0.45rem 1rem; font-size: 0.84rem; cursor: pointer;">
+                        <input type="radio" name="user_type" value="club" id="role-club" onchange="handleRoleSwitch()" style="margin-right: 5px; accent-color: var(--rgcet-royal);">
+                        <span>👥 Club Member</span>
+                    </label>
+                    <label class="morphic-btn" style="padding: 0.45rem 1rem; font-size: 0.84rem; cursor: pointer;">
+                        <input type="radio" name="user_type" value="admin" id="role-admin" onchange="handleRoleSwitch()" style="margin-right: 5px; accent-color: var(--rgcet-royal);">
+                        <span>🛠️ Central Admin</span>
                     </label>
                 </div>
             </div>
 
+            <!-- Club Specific Role Selection -->
+            <div id="club-role-container" class="form-group" style="display: none; background: rgba(37, 99, 235, 0.04); border: 1px solid var(--status-blue-border); border-radius: var(--radius-sm); padding: 1.1rem; margin-bottom: 1.4rem;">
+                <label class="form-label" for="club_role" style="color: var(--rgcet-royal); font-weight: 700;">
+                    Club Position / Designation: <span style="color: var(--status-rose-text);">*</span>
+                </label>
+                <select name="club_role" id="club_role" class="morphic-input" style="font-weight: 600;">
+                    <option value="faculty">👨‍🏫 Faculty Advisor (Review & Forward Events to Admin)</option>
+                    <option value="leader">👑 Club Leader / President (Create Events & Propose)</option>
+                    <option value="coordinator">📋 Coordinator (Gate QR Attendance & Logistics)</option>
+                    <option value="volunteer">🤝 Volunteer (Member Assistance & QR Code)</option>
+                </select>
+                <small style="display: block; margin-top: 6px; font-size: 0.78rem; color: var(--text-muted);">
+                    * Club Leaders submit proposals to Faculty; Faculty reviews & forwards to Admin.
+                </small>
+            </div>
+
             <div class="form-group">
-                <label class="form-label" for="login-email">Email Address</label>
-                <input type="email" name="email" id="login-email" class="form-input" placeholder="e.g. alex@student.edu" required>
+                <label class="form-label" for="login-email">Registered Email Address</label>
+                <input type="email" name="email" id="login-email" class="morphic-input" placeholder="e.g. name@example.com" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="login-password">Password</label>
-                <input type="password" name="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                <input type="password" name="password" id="login-password" class="morphic-input" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.8rem 1rem; font-size: 1rem; margin-top: 0.5rem;">
-                Sign In ➔
+            <button type="submit" class="morphic-btn morphic-btn-primary" style="width: 100%; padding: 0.8rem 1rem; font-size: 0.95rem; margin-top: 0.8rem;">
+                Sign In to Portal ➔
             </button>
         </form>
 
-        <!-- Quick One-Click Demo Logins (Sticky Note) -->
-        <div style="margin-top: 1.8rem; background: var(--sticky-yellow); border: 1px solid var(--sticky-yellow-border); border-radius: 8px; padding: 1rem; position: relative;">
-            <div class="sticky-tape"></div>
-            <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e; margin-bottom: 0.6rem;">⚡ Quick Demo Login:</p>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <button type="button" class="tactile-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; justify-content: flex-start;" onclick="fillDemo('student', 'alex@student.edu', 'alex123')">
-                    🎓 Student: <strong>alex@student.edu</strong> (alex123)
-                </button>
-                <button type="button" class="tactile-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; justify-content: flex-start;" onclick="fillDemo('admin', 'admin@college.edu', 'admin123')">
-                    🛠️ Faculty Admin: <strong>admin@college.edu</strong> (admin123)
-                </button>
-            </div>
-        </div>
-
-        <div style="text-align: center; margin-top: 1.4rem; font-size: 0.88rem; color: var(--ink-pencil);">
-            New student? <a href="{{ url_for('register') }}" style="color: var(--ink-pen-blue); font-weight: 700; text-decoration: underline;">Enroll / Register here</a>
+        <div style="text-align: center; margin-top: 1.4rem; font-size: 0.86rem; color: var(--text-secondary);">
+            New to RGCET Portal? <a href="{{ url_for('register') }}" style="color: var(--rgcet-royal); font-weight: 700;">Enroll or Register here</a>
         </div>
     </div>
 </div>
 
 <script>
-function fillDemo(type, email, pass) {
-    if (type === 'student') {
-        document.getElementById('role-student').checked = true;
-    } else {
-        document.getElementById('role-admin').checked = true;
+function handleRoleSwitch() {
+    const isClub = document.getElementById('role-club').checked;
+    const clubContainer = document.getElementById('club-role-container');
+    if (clubContainer) {
+        clubContainer.style.display = isClub ? 'block' : 'none';
     }
-    document.getElementById('login-email').value = email;
-    document.getElementById('login-password').value = pass;
 }
+
 </script>
 {% endblock %}

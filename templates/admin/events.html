@@ -1,46 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Manage Campus Events | Organizer Desk{% endblock %}
+{% block title %}Manage Campus Events | Central Administration{% endblock %}
 
 {% block content %}
-<div class="notebook-tabs-bar">
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
     <div>
-        <h1 class="notebook-title">
-            <span class="pen-accent-icon">📋</span>
-            Event Operations Ledger
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
+            Campus Event Operations Ledger
         </h1>
-        <p class="hand-note" style="margin-top: 4px;">~ Publish, modify seat quotas, update venues, and cancel events</p>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Direct authority to publish, edit, or delete events across RGCET
+        </p>
     </div>
 
     <div style="display: flex; gap: 0.8rem;">
         <a href="{{ url_for('admin_create_event') }}" class="tactile-btn tactile-btn-primary">
-            + Draft New Event
+            <span>➕</span> Publish Event Directly
         </a>
     </div>
 </div>
 
-<!-- Desk Navigation Divider Tabs -->
+<!-- Desk Navigation Divider Tabs (QR Scanner removed from admin as requested) -->
 <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
     <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
-    <a href="{{ url_for('admin_events') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">📋 Manage Events</a>
+    <a href="{{ url_for('admin_events') }}" class="tactile-btn tactile-btn-primary">📋 Manage Events</a>
+    <a href="{{ url_for('admin_approvals') }}" class="tactile-btn">📥 Endorsements</a>
+    <a href="{{ url_for('admin_deletion_requests') }}" class="tactile-btn">🗑️ Deletion Requests</a>
     <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
-    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
-    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
-    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
-    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
-    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Attendees & Excel</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Notices</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Venues</a>
 </div>
 
-<div class="ledger-table-container">
-    <table class="ledger-table">
+<div class="desk-table-wrap">
+    <table class="desk-table">
         <thead>
             <tr>
                 <th>Event Title</th>
+                <th>Host Club</th>
                 <th>Category</th>
                 <th>Date & Time</th>
                 <th>Venue</th>
-                <th>Booked / Seats</th>
-                <th>Fee</th>
+                <th>Booked</th>
                 <th>Status</th>
                 <th style="text-align: right;">Actions</th>
             </tr>
@@ -48,50 +49,50 @@
         <tbody>
             {% for event in events %}
                 <tr>
-                    <td>
-                        <strong>{{ event.title }}</strong>
+                    <td style="max-width: 220px;">
+                        <strong style="color: var(--ink-black); display: block;">{{ event.title }}</strong>
                         {% if event.pending_payments and event.pending_payments > 0 %}
-                            <div style="margin-top: 3px;">
-                                <span class="rubber-stamp stamp-pending" style="font-size: 0.65rem;">
-                                    {{ event.pending_payments }} PENDING VERIFICATIONS
-                                </span>
-                            </div>
+                            <span class="bubble-pill bubble-amber" style="font-size: 0.65rem; padding: 1px 6px;">
+                                {{ event.pending_payments }} pending payment(s)
+                            </span>
                         {% endif %}
                     </td>
-                    <td><span class="card-tag" style="position: static;">{{ event.category }}</span></td>
-                    <td style="font-family: var(--font-mono); font-size: 0.85rem;">
-                        {{ event.event_date|datetimeformat('%b %d, %Y') }}
+                    <td>
+                        <span class="bubble-pill bubble-blue" style="font-size: 0.72rem;">{{ event.club_name or 'Central Desk' }}</span>
+                    </td>
+                    <td>{{ event.category }}</td>
+                    <td>
+                        <div>{{ event.event_date|datetimeformat('%b %d, %Y') }}</div>
+                        <small style="color: var(--ink-pencil);">{{ event.start_time|timeformat }}</small>
                     </td>
                     <td>{{ event.venue_name or 'Main Ground' }}</td>
                     <td>
                         <strong>{{ event.total_registered or 0 }}</strong> / {{ event.capacity }}
-                    </td>
-                    <td>
-                        {% if event.fee == 0 %}
-                            <span class="fee-free">FREE</span>
-                        {% else %}
-                            <strong>₹{{ "%.0f"|format(event.fee) }}</strong>
-                        {% endif %}
+                        <small style="display: block; color: #15803D; font-weight: 700;">{{ event.total_attended or 0 }} attended</small>
                     </td>
                     <td>
                         {% if event.status == 'upcoming' %}
-                            <span class="rubber-stamp stamp-verified" style="font-size: 0.65rem;">UPCOMING</span>
-                        {% elif event.status == 'cancelled' %}
-                            <span class="rubber-stamp stamp-rejected" style="font-size: 0.65rem;">CANCELLED</span>
+                            <span class="status-badge status-upcoming">Live on Campus</span>
+                        {% elif event.status == 'pending_faculty' %}
+                            <span class="status-badge status-pending_faculty">Pending Faculty</span>
+                        {% elif event.status == 'pending_admin' %}
+                            <span class="status-badge status-pending_admin">Pending Admin</span>
+                        {% elif event.status == 'rejected' %}
+                            <span class="status-badge status-rejected">Rejected</span>
                         {% else %}
-                            <span class="rubber-stamp stamp-attended" style="font-size: 0.65rem;">{{ event.status|upper }}</span>
+                            <span class="status-badge">{{ event.status|upper }}</span>
                         {% endif %}
                     </td>
                     <td style="text-align: right;">
                         <div style="display: inline-flex; gap: 0.4rem;">
-                            <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
+                            <a href="{{ url_for('admin_export_attendance', event_id=event.id) }}" class="tactile-btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; background: #DCFCE7; color: #166534; border-color: #86EFAC;" title="Download Excel (.xlsx)">
+                                📥 Excel
+                            </a>
+                            <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" class="tactile-btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
                                 ✏️ Edit
                             </a>
-                            <a href="{{ url_for('admin_participants', event_id=event.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
-                                👥 Roster
-                            </a>
-                            <form action="{{ url_for('admin_delete_event', event_id=event.id) }}" method="POST" onsubmit="return confirm('Delete this event?');" style="margin: 0; display: inline;">
-                                <button type="submit" class="tactile-btn tactile-btn-danger" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
+                            <form action="{{ url_for('admin_delete_event', event_id=event.id) }}" method="POST" onsubmit="return confirm('Directly delete this event from the portal?');" style="margin: 0; display: inline;">
+                                <button type="submit" class="tactile-btn tactile-btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" title="Delete Event">
                                     🗑️
                                 </button>
                             </form>

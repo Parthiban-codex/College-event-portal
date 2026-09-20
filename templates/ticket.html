@@ -52,9 +52,12 @@
     <div class="ticket-main">
         <div class="ticket-header">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <span class="ticket-org">CAMPUS EVENT ADMIT-ONE PASS</span>
-                    <h2 class="ticket-event-name">{{ ticket.event_title }}</h2>
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET" style="width: 44px; height: 44px; object-fit: contain;">
+                    <div>
+                        <span class="ticket-org" style="color: var(--rgcet-navy); font-weight: 800;">RAJIV GANDHI COLLEGE OF ENGINEERING & TECHNOLOGY</span>
+                        <h2 class="ticket-event-name" style="margin-top: 2px;">{{ ticket.event_title }}</h2>
+                    </div>
                 </div>
                 <span class="card-tag" style="position: static;">{{ ticket.event_category }}</span>
             </div>
@@ -80,6 +83,14 @@
             <div class="ticket-field" style="grid-column: span 2;">
                 <label>Venue Location</label>
                 <span>📍 {{ ticket.venue_name or 'Main Campus Auditorium' }}</span>
+            </div>
+            <div class="ticket-field">
+                <label>Club Leader</label>
+                <span>{{ ticket.leader_name or 'Not assigned' }}</span>
+            </div>
+            <div class="ticket-field">
+                <label>Faculty</label>
+                <span>{{ ticket.faculty_name or 'Not assigned' }}</span>
             </div>
         </div>
 

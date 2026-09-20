@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Gate QR Attendance Desk | {{ event.title }}{% endblock %}
+
+{% block extra_head %}
+<!-- HTML5 QR Code Scanner Library for Browser Camera -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Header Bar -->
+<div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+            <span class="morphic-badge morphic-badge-blue">{{ event.club_name }}</span>
+            <span class="morphic-badge morphic-badge-emerald">Gate Attendance Desk</span>
+        </div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
+            {{ event.title }}
+        </h1>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 3px;">
+            📍 {{ event.venue_name }} • 📅 {{ event.event_date|datetimeformat('%a, %b %d, %Y') }} ({{ event.start_time|timeformat }})
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <!-- Download Excel (.xlsx) Button -->
+        <a href="{{ url_for('club_export_attendance', event_id=event.id) }}" class="morphic-btn morphic-btn-primary" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important; border-color: #10B981 !important;">
+            <span>📥</span> Download Attendance (.xlsx)
+        </a>
+        <a href="{{ url_for('club_events') }}" class="morphic-btn">
+            <span>🔙</span> Club Events
+        </a>
+    </div>
+</div>
+
+<!-- Attendance Stats Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2.2rem;">
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Total Passes Issued</div>
+        <div class="morphic-stat-value" style="color: var(--rgcet-royal);">{{ participants|length }}</div>
+        <div class="morphic-stat-sub">Venue Capacity: {{ event.capacity }}</div>
+    </div>
+
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Verified Present</div>
+        <div id="stat-attended-count" class="morphic-stat-value" style="color: #10B981;">{{ attended_count }}</div>
+        <div class="morphic-stat-sub">Checked in via Gate QR / Desk</div>
+    </div>
+
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Remaining</div>
+        <div id="stat-remaining-count" class="morphic-stat-value" style="color: #F59E0B;">{{ participants|length - attended_count }}</div>
+        <div class="morphic-stat-sub">Pending arrival & gate check-in</div>
+    </div>
+</div>
+
+<!-- Live QR Camera Scanner & Ticket Code Entry Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.6rem; margin-bottom: 2.5rem;">
+    
+    <!-- Camera QR Scanner -->
+    <div class="morphic-card" style="padding: 1.6rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;">
+                <span>📷</span> Live Gate Camera Scanner
+            </h3>
+            <span class="morphic-badge morphic-badge-emerald" style="font-size: 0.7rem;">Active Lens</span>
+        </div>
+        
+        <div id="qr-reader" style="width: 100%; min-height: 260px; border-radius: var(--radius-sm); overflow: hidden; background: #0F172A; border: 1px solid var(--glass-border);"></div>
+        
+        <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
+            <button id="btn-start-camera" class="morphic-btn morphic-btn-primary" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;" onclick="startQrScanner()">
+                ▶ Start Camera Scanner
+            </button>
+            <button id="btn-stop-camera" class="morphic-btn" style="padding: 0.6rem 1rem; font-size: 0.85rem; display: none;" onclick="stopQrScanner()">
+                ⏹ Stop
+            </button>
+        </div>
+    </div>
+
+    <!-- Manual Ticket Code Entry & Live Feedback -->
+    <div class="morphic-card" style="padding: 1.6rem; display: flex; flex-direction: column;">
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>⌨️</span> Manual Ticket Pass Check-in
+        </h3>
+
+        <form id="manualCheckinForm" onsubmit="handleManualCheckin(event)" style="display: flex; gap: 0.6rem; margin-bottom: 1.2rem;">
+            <input type="text" id="manualTicketCode" class="morphic-input" placeholder="e.g. RGCET-A1B2C3" required style="font-family: var(--font-mono); text-transform: uppercase; font-weight: 700;">
+            <button type="submit" class="morphic-btn morphic-btn-primary" style="padding: 0.6rem 1.2rem; white-space: nowrap;">
+                Verify Pass ➔
+            </button>
+        </form>
+
+        <!-- Dynamic Result Card -->
+        <div id="scanResultBox" style="display: none; padding: 1.2rem; border-radius: var(--radius-sm); margin-top: auto; border: 1px solid transparent;">
+            <div id="scanResultContent"></div>
+        </div>
+
+        <div class="morphic-inset-surface" style="margin-top: auto; padding: 1rem; font-size: 0.84rem; color: var(--text-secondary);">
+            💡 <strong>Gate Volunteer Tip:</strong> Students can present their Admit-One digital QR pass on mobile or paper printout. Each student pass has a tamper-proof encrypted code.
+        </div>
+    </div>
+</div>
+
+<!-- Attendees Roster Table -->
+<div>
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black);">
+            👥 Registered Attendees Directory ({{ participants|length }})
+        </h2>
+        <a href="{{ url_for('club_export_attendance', event_id=event.id) }}" class="tactile-btn" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+            📥 Export to Excel (.xlsx)
+        </a>
+    </div>
+
+    {% if participants %}
+        <div class="desk-table-wrap">
+            <table class="desk-table" id="attendeesTable">
+                <thead>
+                    <tr>
+                        <th>Student Details</th>
+                        <th>Roll Number</th>
+                        <th>Department</th>
+                        <th>Ticket Pass Code</th>
+                        <th>Payment Status</th>
+                        <th>Attendance</th>
+                        <th>Check-in Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participants %}
+                        <tr id="row-{{ p.ticket_code }}">
+                            <td>
+                                <strong style="display: block; font-size: 0.92rem; color: var(--ink-black);">{{ p.student_name }}</strong>
+                                <small style="color: var(--ink-pencil);">{{ p.email }} • {{ p.phone }}</small>
+                            </td>
+                            <td style="font-family: var(--font-mono); font-weight: 700;">
+                                {{ p.roll_number }}
+                            </td>
+                            <td>
+                                <div>{{ p.department }}</div>
+                                <small style="color: var(--ink-pencil);">{{ p.year_of_study }}</small>
+                            </td>
+                            <td style="font-family: var(--font-mono); font-weight: 800; color: var(--rgcet-royal);">
+                                {{ p.ticket_code }}
+                            </td>
+                            <td>
+                                {% if p.payment_status == 'free' %}
+                                    <span class="bubble-pill bubble-green" style="font-size: 0.68rem;">FREE PASS</span>
+                                {% elif p.payment_status == 'verified' %}
+                                    <span class="bubble-pill bubble-blue" style="font-size: 0.68rem;">PAID (VERIFIED)</span>
+                                {% else %}
+                                    <span class="bubble-pill bubble-amber" style="font-size: 0.68rem;">{{ p.payment_status.upper() }}</span>
+                                {% endif %}
+                            </td>
+                            <td id="status-cell-{{ p.ticket_code }}">
+                                {% if p.status == 'attended' %}
+                                    <span class="status-badge status-upcoming">✓ ATTENDED</span>
+                                {% else %}
+                                    <span class="status-badge" style="background: #F1F5F9; color: #475569;">Registered</span>
+                                {% endif %}
+                            </td>
+                            <td id="time-cell-{{ p.ticket_code }}" style="font-size: 0.82rem; color: var(--ink-pencil);">
+                                {% if p.attended_at %}
+                                    {{ p.attended_at|datetimeformat('%b %d, %I:%M %p') }}
+                                {% else %}
+                                    Not Checked In
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 2.5rem; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+            <p style="font-size: 2rem;">🎟️</p>
+            <p style="font-weight: 700;">No registrations claimed for this event yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+const eventId = {{ event.id }};
+let html5QrCode = null;
+
+function verifyTicketApi(ticketCode) {
+    fetch('/api/club/scan-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket_code: ticketCode, event_id: eventId })
+    })
+    .then(res => res.json().then(data => ({ status: res.status, body: data })))
+    .then(({ status, body }) => {
+        const box = document.getElementById('scanResultBox');
+        const content = document.getElementById('scanResultContent');
+        box.style.display = 'block';
+
+        if (body.success) {
+            box.style.background = '#DCFCE7';
+            box.style.borderColor = '#86EFAC';
+            box.style.color = '#166534';
+            content.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem;">
+                    <span>✅</span> ${body.message}
+                </div>
+                <div style="margin-top: 4px; font-size: 0.88rem;">
+                    Student: <strong>${body.student.name}</strong> (${body.student.roll_number}) • ${body.timestamp}
+                </div>
+            `;
+
+            // Update row in table if present
+            const statusCell = document.getElementById(`status-cell-${ticketCode}`);
+            const timeCell = document.getElementById(`time-cell-${ticketCode}`);
+            if (statusCell) {
+                statusCell.innerHTML = `<span class="status-badge status-upcoming">✓ ATTENDED</span>`;
+            }
+            if (timeCell) {
+                timeCell.textContent = body.timestamp;
+            }
+
+            // Update counts
+            const attendedCountEl = document.getElementById('stat-attended-count');
+            const remCountEl = document.getElementById('stat-remaining-count');
+            if (attendedCountEl && remCountEl) {
+                let curr = parseInt(attendedCountEl.textContent) || 0;
+                let rem = parseInt(remCountEl.textContent) || 0;
+                attendedCountEl.textContent = curr + 1;
+                remCountEl.textContent = Math.max(0, rem - 1);
+            }
+        } else if (body.already_attended) {
+            box.style.background = '#FEF3C7';
+            box.style.borderColor = '#FCD34D';
+            box.style.color = '#92400E';
+            content.innerHTML = `
+                <div style="font-weight: 800;">⚠️ ${body.message}</div>
+                <div style="font-size: 0.85rem;">Student: <strong>${body.student.name}</strong> (${body.student.roll_number})</div>
+            `;
+        } else {
+            box.style.background = '#FEE2E2';
+            box.style.borderColor = '#FCA5A5';
+            box.style.color = '#991B1B';
+            content.innerHTML = `<div style="font-weight: 800;">✕ ${body.message}</div>`;
+        }
+    })
+    .catch(err => {
+        alert("Verification request error: " + err);
+    });
+}
+
+function handleManualCheckin(e) {
+    e.preventDefault();
+    const code = document.getElementById('manualTicketCode').value.trim();
+    if (code) {
+        verifyTicketApi(code);
+        document.getElementById('manualTicketCode').value = '';
+    }
+}
+
+function startQrScanner() {
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => {
+            verifyTicketApi(decodedText.trim());
+        },
+        (errorMessage) => {
+            // scan pass
+        }
+    ).then(() => {
+        document.getElementById('btn-start-camera').style.display = 'none';
+        document.getElementById('btn-stop-camera').style.display = 'inline-flex';
+    }).catch(err => {
+        alert("Camera access denied or unavailable: " + err);
+    });
+}
+
+function stopQrScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('btn-start-camera').style.display = 'inline-flex';
+            document.getElementById('btn-stop-camera').style.display = 'none';
+        });
+    }
+}
+</script>
+{% endblock %}

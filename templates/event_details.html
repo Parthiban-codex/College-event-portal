@@ -221,10 +221,10 @@
                 </a>
             {% endif %}
 
-            <!-- Organizer Contact -->
+            <!-- Club & Faculty Organizer Contact -->
             <div style="margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--card-border); font-size: 0.85rem; color: var(--ink-pencil);">
-                <strong>Organizer:</strong> {{ event.organizer_name or 'Faculty Coordinator' }}<br>
-                <span>Email: {{ event.organizer_email or 'events@college.edu' }}</span>
+                <strong>Host Club:</strong> {{ event.club_name or 'RGCET Central Desk' }}<br>
+                <span><strong>Faculty Advisor:</strong> {{ event.faculty_advisor_name or 'RGCET Faculty Coordinator' }}</span>
             </div>
         </div>
     </div>

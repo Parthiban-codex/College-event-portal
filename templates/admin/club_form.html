@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Create Club | RGCET Event Hub{% endblock %}
+
+{% block content %}
+<div class="simple-section" style="max-width: 720px; margin: 0 auto;">
+    <p class="simple-label">CENTRAL ADMIN</p>
+    <h1>Create New Club</h1>
+    <p class="simple-empty">Add a club that students can select during registration.</p>
+
+    <form method="post" style="margin-top: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label" for="club-name">Club Name</label>
+            <input class="morphic-input" id="club-name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="club-code">Club Code</label>
+            <input class="morphic-input" id="club-code" name="code" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="club-category">Category</label>
+            <input class="morphic-input" id="club-category" name="category" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="club-advisor">Faculty Advisor</label>
+            <input class="morphic-input" id="club-advisor" name="faculty_advisor_name" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="club-description">Description</label>
+            <textarea class="morphic-input" id="club-description" name="description" rows="4"></textarea>
+        </div>
+        <button class="morphic-btn morphic-btn-primary" type="submit">Create Club</button>
+    </form>
+</div>
+{% endblock %}

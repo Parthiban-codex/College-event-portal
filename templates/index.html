@@ -1,146 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}Events Ledger | CampusPulse{% endblock %}
+{% block title %}RGCET Event Hub{% endblock %}
 
 {% block content %}
-<!-- Paper Header & Headline -->
-<div class="notebook-tabs-bar">
+<section class="simple-home-header">
     <div>
-        <h1 class="notebook-title">
-            <span class="pen-accent-icon">📄</span>
-            Campus Events
-        </h1>
-        <p class="hand-note" style="margin-top: 4px;">~ Workshops, cultural fests, hackathons & digital passes</p>
+        <p class="simple-label">RGCET EVENT HUB</p>
+        <h1>Rajiv Gandhi College of Engineering and Technology</h1>
+        <p>Innovation Through Information</p>
     </div>
-
-    <!-- Academic Year Stamp -->
-    <div style="text-align: right;">
-        <span class="rubber-stamp stamp-verified" style="font-size: 0.8rem;">ACADEMIC YEAR 2026</span>
+    <div class="simple-home-actions">
+        <a href="#events-showcase" class="morphic-btn morphic-btn-primary">View Events</a>
+        <a href="{{ url_for('calendar_view') }}" class="morphic-btn">Calendar</a>
     </div>
-</div>
+</section>
 
-<!-- Crumpled Paper Memo Slips: Key Highlights -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem;">
-    <div class="sticky-note sticky-yellow" style="transform: rotate(-0.5deg);">
-        <div class="sticky-tape"></div>
-        <p style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">📋 Active Events</p>
-        <p style="font-size: 2.2rem; font-weight: 800; color: #713f12; line-height: 1.1; margin: 4px 0;">{{ stats.total_events }}</p>
-        <small class="hand-note" style="font-size: 1.15rem; color: #a16207;">Scheduled on campus</small>
-    </div>
-
-    <div class="sticky-note sticky-mint" style="transform: rotate(0.8deg);">
-        <div class="sticky-tape"></div>
-        <p style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: #166534;">🎫 Passes Issued</p>
-        <p style="font-size: 2.2rem; font-weight: 800; color: #14532d; line-height: 1.1; margin: 4px 0;">{{ stats.total_registrations }}</p>
-        <small class="hand-note" style="font-size: 1.15rem; color: #15803d;">Verified student tickets</small>
-    </div>
-
-    <div class="sticky-note sticky-rose" style="transform: rotate(-0.8deg);">
-        <div class="sticky-tape"></div>
-        <p style="font-size: 0.8rem; text-transform: uppercase; font-weight: 800; color: #9f1239;">🎓 Active Students</p>
-        <p style="font-size: 2.2rem; font-weight: 800; color: #881337; line-height: 1.1; margin: 4px 0;">{{ stats.total_students }}+</p>
-        <small class="hand-note" style="font-size: 1.15rem; color: #be123c;">Across departments</small>
-    </div>
-</div>
-
-<!-- Search & Filter Paper Bar -->
-<div style="background: var(--paper-card); border: 1.5px solid var(--card-border); border-radius: var(--radius-md); padding: 1.2rem 1.4rem; box-shadow: var(--card-shadow); margin-bottom: 2rem;">
-    <form action="{{ url_for('index') }}" method="GET" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
-        
-        <!-- Live Search Field -->
-        <div class="search-input-box" style="flex: 1; min-width: 260px;">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="eventSearchInput" name="search" placeholder="Search events, workshops, keywords..." value="{{ search_query }}">
+<section id="announcements" class="simple-section">
+    <div class="simple-section-heading">
+        <div>
+            <p class="simple-label">NOTICE BOARD</p>
+            <h2>Campus Announcements</h2>
         </div>
-
-        <!-- Filter Dropdowns -->
-        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-            <select name="category" class="form-select" style="width: auto; padding: 0.6rem 1rem; border-radius: 20px; font-weight: 600;" onchange="this.form.submit()">
-                <option value="all">📂 All Categories</option>
-                {% for cat in categories %}
-                    <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
-                {% endfor %}
-            </select>
-
-            <select name="fee_type" class="form-select" style="width: auto; padding: 0.6rem 1rem; border-radius: 20px; font-weight: 600;" onchange="this.form.submit()">
-                <option value="all" {% if fee_type == 'all' %}selected{% endif %}>💳 All Prices</option>
-                <option value="free" {% if fee_type == 'free' %}selected{% endif %}>🟢 Free Passes Only</option>
-                <option value="paid" {% if fee_type == 'paid' %}selected{% endif %}>💰 Paid Only</option>
-            </select>
-
-            <button type="submit" class="tactile-btn tactile-btn-primary" style="padding: 0.6rem 1.2rem; border-radius: 20px;">
-                Apply
-            </button>
-        </div>
-    </form>
-</div>
-
-<!-- Events Grid -->
-<div>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1.2rem;">
-        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black);">
-            Available Events <span style="font-size: 0.95rem; font-weight: 600; color: var(--ink-pencil);">({{ events|length }} found)</span>
-        </h2>
-        <a href="{{ url_for('calendar_view') }}" class="hand-note" style="font-size: 1.2rem; color: var(--ink-pen-blue);">Open Calendar View ➔</a>
+        <span class="morphic-badge morphic-badge-emerald">Public</span>
     </div>
-
-    {% if events %}
-        <div class="events-grid">
-            {% for event in events %}
-                <article class="event-index-card" data-category="{{ event.category }}" data-title="{{ event.title }}">
-                    <!-- Flyer Banner -->
-                    <div class="card-banner-box">
-                        {% if event.banner_image %}
-                            <img src="{{ url_for('static', filename='uploads/banners/' + event.banner_image) }}" alt="{{ event.title }}" class="card-banner-img" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=80'">
-                        {% else %}
-                            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=80" alt="{{ event.title }}" class="card-banner-img">
-                        {% endif %}
-                        <span class="card-tag">{{ event.category }}</span>
-                    </div>
-
-                    <!-- Card Body -->
-                    <div class="card-body">
-                        <div class="card-date-badge">
-                            <span>📅 {{ event.event_date|datetimeformat('%a, %b %d, %Y') }}</span>
-                            <span>•</span>
-                            <span>⏰ {{ event.start_time|timeformat }}</span>
-                        </div>
-
-                        <h3 class="card-title">{{ event.title }}</h3>
-                        <p class="card-desc">{{ event.description }}</p>
-
-                        <div style="font-size: 0.85rem; color: var(--ink-pencil); margin-bottom: 0.8rem;">
-                            📍 <strong>{{ event.venue_name or 'Main Auditorium' }}</strong> ({{ event.building or 'Campus' }})
-                        </div>
-
-                        <!-- Card Bottom Row -->
-                        <div class="card-meta-row">
-                            <div>
-                                {% if event.fee == 0 %}
-                                    <span class="fee-free">FREE PASS</span>
-                                {% else %}
-                                    <span class="card-fee">₹{{ "%.0f"|format(event.fee) }}</span>
-                                {% endif %}
-                                <div style="font-size: 0.75rem; color: var(--ink-pencil);">
-                                    {{ event.registered_count or 0 }} / {{ event.capacity }} enrolled
-                                </div>
-                            </div>
-
-                            <a href="{{ url_for('event_details', event_id=event.id) }}" class="tactile-btn tactile-btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">
-                                Pass & Details ➔
-                            </a>
-                        </div>
-                    </div>
-                </article>
+    {% if announcements %}
+        <div class="simple-list">
+            {% for note in announcements %}
+            <article class="simple-list-item">
+                <div>
+                    <h3>{{ note.title }}</h3>
+                    <p>{{ note.message }}</p>
+                </div>
+                <small>{{ note.created_at|datetimeformat('%b %d, %Y') }}</small>
+            </article>
             {% endfor %}
         </div>
     {% else %}
-        <div style="text-align: center; padding: 4rem 1rem; background: var(--paper-card); border-radius: var(--radius-md); border: 2px dashed var(--card-border);">
-            <p style="font-size: 3rem; margin-bottom: 0.5rem;">📄</p>
-            <h3 style="font-weight: 800; margin-bottom: 0.5rem;">No Events Recorded on this Page</h3>
-            <p style="color: var(--ink-pencil); margin-bottom: 1.5rem;">Try adjusting your filter criteria or search keywords.</p>
-            <a href="{{ url_for('index') }}" class="tactile-btn">Reset Filters</a>
-        </div>
+        <p class="simple-empty">No announcements right now.</p>
     {% endif %}
-</div>
+</section>
+
+<section id="events-showcase" class="simple-section">
+    <div class="simple-section-heading">
+        <div>
+            <p class="simple-label">UPCOMING</p>
+            <h2>Events and Pamphlets</h2>
+        </div>
+        <strong>{{ events|length }} events</strong>
+    </div>
+
+    <form action="{{ url_for('index') }}" method="get" class="simple-filter">
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Search events">
+        <select name="category">
+            <option value="all">All categories</option>
+            {% for category in categories %}
+            <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+        </select>
+        <select name="fee_type">
+            <option value="all" {% if fee_type == 'all' %}selected{% endif %}>All prices</option>
+            <option value="free" {% if fee_type == 'free' %}selected{% endif %}>Free</option>
+            <option value="paid" {% if fee_type == 'paid' %}selected{% endif %}>Paid</option>
+        </select>
+        <button type="submit" class="morphic-btn morphic-btn-primary">Search</button>
+    </form>
+
+    {% if events %}
+        <div class="simple-event-grid">
+            {% for event in events %}
+            <article class="morphic-card simple-event-card">
+                <span class="morphic-badge morphic-badge-blue">{{ event.category }}</span>
+                <h3>{{ event.title }}</h3>
+                <p>{{ event.description }}</p>
+                <div class="simple-event-info">
+                    <span>{{ event.event_date|datetimeformat('%b %d, %Y') }}</span>
+                    <span>{{ event.venue_name or 'Campus Venue' }}</span>
+                    <span>{% if event.fee == 0 %}Free{% else %}Rs. {{ event.fee }}{% endif %}</span>
+                </div>
+                <a href="{{ url_for('event_details', event_id=event.id) }}" class="morphic-btn morphic-btn-primary">View Details</a>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="simple-empty">No events match your search.</p>
+    {% endif %}
+</section>
+
+<section id="homepage-calendar" class="simple-section simple-calendar">
+    <p class="simple-label">SCHEDULE</p>
+    <h2>Campus Calendar</h2>
+    <p>See all approved events by date.</p>
+    <a href="{{ url_for('calendar_view') }}" class="morphic-btn">Open Calendar</a>
+</section>
+
+<section class="simple-section">
+    <div class="simple-section-heading">
+        <div>
+            <p class="simple-label">STUDENT ACTIVITIES</p>
+            <h2>Campus Clubs</h2>
+        </div>
+        <strong>{{ clubs|length }} clubs</strong>
+    </div>
+    <div class="simple-club-list">
+        {% for club in clubs %}
+        <article class="simple-club-item">
+            <span class="morphic-badge morphic-badge-amber">{{ club.code }}</span>
+            <div>
+                <h3>{{ club.name }}</h3>
+                <p>{{ club.description }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}

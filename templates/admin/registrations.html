@@ -12,23 +12,18 @@
         <p class="hand-note" style="margin-top: 4px;">~ Verify student UPI reference IDs, check payment receipts, and issue passes</p>
     </div>
 
-    <div>
-        <a href="{{ url_for('admin_scanner') }}" class="tactile-btn tactile-btn-primary" style="background: #d97706; border-color: #b45309;">
-            📷 QR Gate Scanner
-        </a>
-    </div>
 </div>
 
-<!-- Desk Navigation Divider Tabs -->
-<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
+<!-- Desk Navigation Divider Tabs (QR Scanner removed from admin) -->
+<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
     <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
     <a href="{{ url_for('admin_events') }}" class="tactile-btn">📋 Manage Events</a>
-    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">💳 Verify Payments</a>
-    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
-    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Participants & CSV</a>
-    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Announcements</a>
-    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">⭐ Reviews</a>
-    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Campus Venues</a>
+    <a href="{{ url_for('admin_approvals') }}" class="tactile-btn">📥 Endorsements</a>
+    <a href="{{ url_for('admin_deletion_requests') }}" class="tactile-btn">🗑️ Deletion Requests</a>
+    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn tactile-btn-primary">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Attendees & Excel</a>
+    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Notices</a>
+    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Venues</a>
 </div>
 
 <!-- Filter Shelf -->

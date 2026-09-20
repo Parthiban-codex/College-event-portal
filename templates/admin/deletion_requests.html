@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Event Deletion Requests | Central Administration{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: #B91C1C;">
+            Club Event Deletion Requests
+        </h1>
+        <p class="hand-note" style="font-size: 1.2rem; color: var(--ink-pencil);">
+            ~ Only Central Administration has authority to authorize event deletions
+        </p>
+    </div>
+
+    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">
+        <span>🔙</span> Central Desk
+    </a>
+</div>
+
+{% if deletion_requests %}
+    <div style="display: flex; flex-direction: column; gap: 1.4rem;">
+        {% for req in deletion_requests %}
+            <div style="background: var(--paper-card); border: 2px solid {% if req.status == 'pending' %}#FCA5A5{% else %}var(--card-border){% endif %}; border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--card-shadow); position: relative;">
+                <div class="sticky-tape" style="top: -10px;"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem;">
+                            <span class="bubble-pill bubble-rose">{{ req.club_name }}</span>
+                            {% if req.status == 'pending' %}
+                                <span class="status-badge status-pending_admin">Awaiting Decision</span>
+                            {% elif req.status == 'approved' %}
+                                <span class="status-badge status-upcoming" style="background: #FEE2E2; color: #991B1B;">Deleted</span>
+                            {% else %}
+                                <span class="status-badge">Request Rejected</span>
+                            {% endif %}
+                        </div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--ink-black);">
+                            {{ req.event_title }}
+                        </h3>
+                        <small style="color: var(--ink-pencil);">
+                            Requested by: <strong>{{ req.requested_by_name }}</strong> (Club {{ req.requested_by_role.capitalize() }}) • Submitted on {{ req.created_at|datetimeformat('%b %d, %Y at %I:%M %p') }}
+                        </small>
+                    </div>
+
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--ink-pencil);">
+                        📅 Event Date: {{ req.event_date|datetimeformat('%b %d, %Y') }}
+                    </div>
+                </div>
+
+                <!-- Justification Box -->
+                <div style="background: #FFF1F2; border: 1px solid #FECDD3; border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.2rem;">
+                    <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: #9F1239; margin-bottom: 4px;">
+                        Club Justification for Deletion:
+                    </div>
+                    <p style="font-size: 0.92rem; color: #881337; line-height: 1.45;">
+                        "{{ req.reason }}"
+                    </p>
+                    {% if req.admin_remarks %}
+                        <div style="border-top: 1px dashed #FDA4AF; padding-top: 6px; margin-top: 6px; font-size: 0.82rem; color: #BE123C;">
+                            Admin Response: {{ req.admin_remarks }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if req.status == 'pending' %}
+                    <form method="POST" action="" style="display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--card-border); padding-top: 0.8rem;">
+                        <div style="flex: 1; min-width: 240px;">
+                            <input type="text" name="admin_remarks" class="form-input" placeholder="Admin remarks / justification note (optional)...">
+                        </div>
+                        <div style="display: flex; gap: 0.6rem;">
+                            <button type="submit" formaction="{{ url_for('admin_process_deletion_request', req_id=req.id, action='reject') }}" class="tactile-btn">
+                                Keep Event Active (Reject)
+                            </button>
+                            <button type="submit" formaction="{{ url_for('admin_process_deletion_request', req_id=req.id, action='approve') }}" class="tactile-btn tactile-btn-danger" onclick="return confirm('Authorize deletion of this event? This will permanently remove the event from the portal.');">
+                                🗑️ Authorize Event Deletion
+                            </button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 4rem; background: var(--paper-card); border: 2px dashed var(--card-border); border-radius: var(--radius-md);">
+        <p style="font-size: 3rem;">🕊️</p>
+        <h3 style="font-weight: 800; font-size: 1.3rem; margin-bottom: 0.5rem;">No Deletion Requests</h3>
+        <p style="color: var(--ink-pencil);">There are currently no active event deletion requests from any campus club.</p>
+        <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn" style="margin-top: 1rem;">Back to Central Desk</a>
+    </div>
+{% endif %}
+{% endblock %}

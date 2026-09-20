@@ -1,138 +1,186 @@
-/* ==============================================================================
-   CAMPUS PULSE - STUDENT EVENT PLANNER
-   Design System: Simplified Crumpled Paper Aesthetic
-   Tactile crumpled paper texture, organic crease shading, clean modern layouts
-   Pure Vanilla CSS (Zero bloated external dependencies)
-   ============================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
-/* --- DESIGN TOKENS & COLOR PALETTES --- */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* --- DESIGN TOKENS: LIGHT THEME (DAY FROST) --- */
 :root {
-    /* Modern Typography */
-    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-hand: 'Caveat', cursive, sans-serif;
+    /* Typography */
+    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Outfit', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Theme: Light Mode (Day Crumpled Paper) */
-    --ambient-bg: #ece7dc;
-    --ambient-gradient: radial-gradient(circle at 50% 10%, #f4efe4 0%, #ebe5d7 55%, #ded6c5 100%);
+    /* RGCET Brand Colors */
+    --rgcet-navy: #0F2B5C;
+    --rgcet-royal: #2563EB;
+    --rgcet-royal-glow: rgba(37, 99, 235, 0.25);
+    --rgcet-accent: #3B82F6;
+    --rgcet-gold: #F59E0B;
+
+    /* Ambient Canvas */
+    --ambient-bg: #F8FAFC;
+    --ambient-gradient: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%);
     
-    --paper-sheet-bg: #faf8f5;
-    --paper-texture-url: url('../images/crumpled_paper_light.jpg');
-    --paper-sheet-border: rgba(180, 168, 150, 0.35);
-    --paper-sheet-shadow: 
-        0 25px 60px -15px rgba(60, 48, 30, 0.18),
-        0 8px 24px -6px rgba(60, 48, 30, 0.1),
-        0 0 0 1px rgba(0, 0, 0, 0.05);
-
-    /* Subtle Paper Crease Shading Overlays */
-    --crease-overlay: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.45) 0%,
-        rgba(255, 255, 255, 0) 30%,
-        rgba(0, 0, 0, 0.02) 48%,
-        rgba(255, 255, 255, 0.35) 52%,
-        rgba(0, 0, 0, 0.03) 70%,
-        rgba(255, 255, 255, 0.2) 100%
-    );
-
-    /* Paper Cards & Containers */
-    --paper-card: rgba(255, 255, 255, 0.94);
-    --card-border: rgba(210, 200, 185, 0.6);
-    --card-shadow: 0 4px 14px -2px rgba(50, 38, 20, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-    --card-shadow-hover: 0 14px 28px -6px rgba(50, 38, 20, 0.15), 0 4px 8px rgba(0, 0, 0, 0.06);
-
-    /* Ink & Contrast */
-    --ink-black: #1e2530;
-    --ink-pen-blue: #1d4ed8;
-    --ink-pencil: #526071;
-    --ink-faint: #8896a6;
-
-    /* Sticky / Memo Pastel Slips */
-    --sticky-yellow: #fefce8;
-    --sticky-yellow-border: #fef08a;
-    --sticky-mint: #f0fdf4;
-    --sticky-mint-border: #bbf7d0;
-    --sticky-rose: #fff1f2;
-    --sticky-rose-border: #fecdd3;
-    --sticky-tape: rgba(254, 240, 138, 0.7);
-
-    /* Rubber Ink Stamps */
-    --stamp-green: #15803d;
-    --stamp-orange: #c2410c;
-    --stamp-red: #b91c1c;
-    --stamp-blue: #1d4ed8;
-
-    /* Buttons */
-    --btn-primary-bg: #2563eb;
-    --btn-primary-text: #ffffff;
-    --btn-primary-hover: #1d4ed8;
+    /* Frosted Glassmorphic Surfaces */
+    --glass-surface: rgba(255, 255, 255, 0.82);
+    --glass-surface-hover: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(226, 232, 240, 0.85);
+    --glass-border-subtle: rgba(255, 255, 255, 0.9);
+    --glass-blur: blur(20px);
     
-    /* Perforated Admit-One Ticket */
-    --ticket-bg: #fffcf2;
-    --ticket-edge: #d97706;
+    /* 2D Morphic Shadows */
+    --morphic-shadow-card: 
+        0 10px 30px -10px rgba(15, 23, 42, 0.06),
+        0 2px 8px -2px rgba(15, 23, 42, 0.03),
+        0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+        
+    --morphic-shadow-hover: 
+        0 20px 40px -12px rgba(37, 99, 235, 0.12),
+        0 8px 16px -4px rgba(15, 23, 42, 0.04),
+        0 0 0 1px rgba(37, 99, 235, 0.2) inset;
 
-    --radius-sm: 6px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
+    --morphic-shadow-inset: 
+        inset 0 2px 4px rgba(15, 23, 42, 0.04),
+        inset 0 1px 2px rgba(15, 23, 42, 0.02);
+
+    /* Text & Inks */
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --text-inverse: #FFFFFF;
+
+    /* Semantic Status Accents */
+    --status-emerald-bg: rgba(16, 185, 129, 0.1);
+    --status-emerald-text: #059669;
+    --status-emerald-border: rgba(16, 185, 129, 0.25);
+
+    --status-amber-bg: rgba(245, 158, 11, 0.1);
+    --status-amber-text: #D97706;
+    --status-amber-border: rgba(245, 158, 11, 0.25);
+
+    --status-rose-bg: rgba(239, 68, 68, 0.1);
+    --status-rose-text: #DC2626;
+    --status-rose-border: rgba(239, 68, 68, 0.25);
+
+    --status-blue-bg: rgba(37, 99, 235, 0.1);
+    --status-blue-text: #2563EB;
+    --status-blue-border: rgba(37, 99, 235, 0.25);
+
+    --status-purple-bg: rgba(139, 92, 246, 0.1);
+    --status-purple-text: #7C3AED;
+    --status-purple-border: rgba(139, 92, 246, 0.25);
+
+    /* Form & Controls */
+    --control-bg: rgba(248, 250, 252, 0.85);
+    --control-border: #CBD5E1;
+    --control-border-focus: #2563EB;
+
+    /* Radii */
+    --radius-xs: 6px;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+
+    /* Legacy Fallbacks / Aliases for seamless backward compatibility */
+    --paper-sheet-bg: var(--glass-surface);
+    --paper-card: var(--glass-surface);
+    --card-border: var(--glass-border);
+    --card-shadow: var(--morphic-shadow-card);
+    --card-shadow-hover: var(--morphic-shadow-hover);
+    --ink-black: var(--text-primary);
+    --ink-pencil: var(--text-secondary);
+    --ink-faint: var(--text-muted);
+    --ink-pen-blue: var(--rgcet-royal);
+    --btn-primary-bg: #2563EB;
+    --btn-primary-text: #FFFFFF;
+    --btn-primary-hover: #1D4ED8;
+    --paper-sheet-border: var(--glass-border);
+    --paper-sheet-shadow: var(--morphic-shadow-card);
+    --notebook-paper: var(--control-bg);
+    --ticket-bg: var(--glass-surface);
+    --ticket-edge: var(--glass-border);
 }
 
-/* --- THEME: DARK MODE (Night Crumpled Kraft Paper) --- */
+/* --- DESIGN TOKENS: DARK THEME (OBSIDIAN FROST) --- */
 [data-theme="dark"] {
-    --ambient-bg: #121316;
-    --ambient-gradient: radial-gradient(circle at 50% 10%, #1e2025 0%, #15161a 60%, #0d0e10 100%);
+    --ambient-bg: #0B0F19;
+    --ambient-gradient: radial-gradient(circle at 50% 0%, #171E2E 0%, #0F1420 50%, #080B12 100%);
 
-    --paper-sheet-bg: #1e2025;
-    --paper-texture-url: url('../images/crumpled_paper_dark.jpg');
-    --paper-sheet-border: rgba(255, 255, 255, 0.08);
-    --paper-sheet-shadow: 
-        0 30px 70px -15px rgba(0, 0, 0, 0.7),
-        0 10px 30px -8px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.06);
+    --glass-surface: rgba(18, 24, 38, 0.75);
+    --glass-surface-hover: rgba(26, 34, 52, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-subtle: rgba(255, 255, 255, 0.12);
 
-    --crease-overlay: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.06) 0%,
-        rgba(0, 0, 0, 0.15) 35%,
-        rgba(255, 255, 255, 0.04) 50%,
-        rgba(0, 0, 0, 0.2) 75%,
-        rgba(255, 255, 255, 0.03) 100%
-    );
+    --morphic-shadow-card: 
+        0 16px 36px -12px rgba(0, 0, 0, 0.6),
+        0 2px 10px -2px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 
-    --paper-card: rgba(30, 33, 40, 0.92);
-    --card-border: rgba(255, 255, 255, 0.09);
-    --card-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
-    --card-shadow-hover: 0 16px 32px -6px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.4);
+    --morphic-shadow-hover: 
+        0 24px 48px -12px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(59, 130, 246, 0.2),
+        0 0 0 1px rgba(96, 165, 250, 0.3) inset;
 
-    --ink-black: #f1f5f9;
-    --ink-pen-blue: #60a5fa;
-    --ink-pencil: #94a3b8;
-    --ink-faint: #64748b;
+    --morphic-shadow-inset: 
+        inset 0 2px 5px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(0, 0, 0, 0.4);
 
-    --sticky-yellow: #292415;
-    --sticky-yellow-border: #4d3e17;
-    --sticky-mint: #13271d;
-    --sticky-mint-border: #1c452e;
-    --sticky-rose: #2d161d;
-    --sticky-rose-border: #521c2c;
-    --sticky-tape: rgba(234, 179, 8, 0.25);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --text-inverse: #0F172A;
 
-    --stamp-green: #22c55e;
-    --stamp-orange: #fb923c;
-    --stamp-red: #f87171;
-    --stamp-blue: #60a5fa;
+    --rgcet-navy: #93C5FD;
+    --rgcet-royal: #3B82F6;
+    --rgcet-royal-glow: rgba(59, 130, 246, 0.35);
 
-    --btn-primary-bg: #3b82f6;
-    --btn-primary-text: #ffffff;
-    --btn-primary-hover: #2563eb;
+    --status-emerald-bg: rgba(16, 185, 129, 0.15);
+    --status-emerald-text: #34D399;
+    --status-emerald-border: rgba(16, 185, 129, 0.3);
 
-    --ticket-bg: #222630;
-    --ticket-edge: #f59e0b;
+    --status-amber-bg: rgba(245, 158, 11, 0.15);
+    --status-amber-text: #FBBF24;
+    --status-amber-border: rgba(245, 158, 11, 0.3);
+
+    --status-rose-bg: rgba(239, 68, 68, 0.15);
+    --status-rose-text: #F87171;
+    --status-rose-border: rgba(239, 68, 68, 0.3);
+
+    --status-blue-bg: rgba(59, 130, 246, 0.15);
+    --status-blue-text: #60A5FA;
+    --status-blue-border: rgba(59, 130, 246, 0.3);
+
+    --status-purple-bg: rgba(139, 92, 246, 0.15);
+    --status-purple-text: #A78BFA;
+    --status-purple-border: rgba(139, 92, 246, 0.3);
+
+    --control-bg: rgba(15, 23, 42, 0.7);
+    --control-border: rgba(255, 255, 255, 0.12);
+    --control-border-focus: #3B82F6;
+
+    /* Legacy Fallbacks */
+    --paper-sheet-bg: var(--glass-surface);
+    --paper-card: var(--glass-surface);
+    --card-border: var(--glass-border);
+    --card-shadow: var(--morphic-shadow-card);
+    --card-shadow-hover: var(--morphic-shadow-hover);
+    --ink-black: var(--text-primary);
+    --ink-pencil: var(--text-secondary);
+    --ink-faint: var(--text-muted);
+    --ink-pen-blue: var(--rgcet-royal);
+    --btn-primary-bg: #3B82F6;
+    --btn-primary-text: #FFFFFF;
+    --btn-primary-hover: #2563EB;
+    --paper-sheet-border: var(--glass-border);
+    --paper-sheet-shadow: var(--morphic-shadow-card);
+    --notebook-paper: var(--control-bg);
+    --ticket-bg: var(--glass-surface);
+    --ticket-edge: var(--glass-border);
 }
 
 /* --- BASE & GLOBAL RESETS --- */
-* {
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -140,819 +188,1213 @@
 
 body {
     font-family: var(--font-main);
-    color: var(--ink-black);
+    color: var(--text-primary);
     background-color: var(--ambient-bg);
     background-image: var(--ambient-gradient);
     min-height: 100vh;
     line-height: 1.55;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     transition: background 0.3s ease, color 0.3s ease;
 }
 
 a {
     color: inherit;
     text-decoration: none;
+    transition: color 0.18s ease;
 }
 
 button, input, select, textarea {
     font-family: inherit;
 }
 
-/* --- FLOATING CRUMPLED PAPER NAVBAR --- */
-.desk-ruler-nav, .paper-nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--paper-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1.5px solid var(--card-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-    padding: 0.8rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all 0.3s ease;
+/* --- MORPHIC SURFACE PRIMITIVES --- */
+
+/* Frosted Glass Card */
+.morphic-card, .paper-card {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--morphic-shadow-card);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.22s ease;
 }
 
-/* Clean Paper Brand */
-.nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    font-size: 1.35rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+.morphic-card-interactive {
+    cursor: pointer;
+}
+.morphic-card-interactive:hover, .pamphlet-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--morphic-shadow-hover);
+    border-color: var(--rgcet-royal);
 }
 
-.brand-notebook-icon {
-    font-size: 1.5rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.brand-pen-logo {
-    color: var(--ink-pen-blue);
+/* Morphic Container Sheet */
+.morphic-page-container, .notebook-container {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--morphic-shadow-card);
+    overflow: hidden;
     position: relative;
 }
 
-.brand-pen-logo span {
-    color: var(--ink-black);
+.morphic-page-body, .notebook-page {
+    padding: 2.4rem;
+    position: relative;
+}
+
+/* Recessed Inset Surface */
+.morphic-inset-surface {
+    background: var(--control-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--morphic-shadow-inset);
+}
+
+/* --- MORPHIC BUTTONS --- */
+.morphic-btn, .tactile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-surface);
+    backdrop-filter: blur(12px);
+    color: var(--text-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    text-decoration: none;
+}
+[data-theme="dark"] .morphic-btn, [data-theme="dark"] .tactile-btn {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.morphic-btn:hover, .tactile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -4px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.3) inset;
+    border-color: var(--rgcet-royal);
+    color: var(--rgcet-royal);
+}
+
+.morphic-btn:active, .tactile-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--morphic-shadow-inset);
+}
+
+/* Primary Vibrant Action Button */
+.morphic-btn-primary, .tactile-btn-primary {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    color: #FFFFFF !important;
+    border-color: #2563EB !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35), 0 1px 0 rgba(255, 255, 255, 0.25) inset !important;
+}
+.morphic-btn-primary:hover, .tactile-btn-primary:hover {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45), 0 1px 0 rgba(255, 255, 255, 0.35) inset !important;
+    color: #FFFFFF !important;
+}
+
+/* Danger Button */
+.morphic-btn-danger, .tactile-btn-danger {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+    color: #FFFFFF !important;
+    border-color: #EF4444 !important;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+.morphic-btn-danger:hover, .tactile-btn-danger:hover {
+    background: linear-gradient(135deg, #F87171 0%, #EF4444 100%) !important;
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.45) !important;
+    color: #FFFFFF !important;
+}
+
+/* Success Button */
+.morphic-btn-success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+    color: #FFFFFF !important;
+    border-color: #10B981 !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+.morphic-btn-success:hover {
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.45) !important;
+}
+
+/* Secondary Button */
+.morphic-btn-secondary {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--rgcet-royal);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* --- MORPHIC PILL BADGES & TAGS --- */
+.morphic-badge, .bubble-pill, .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    transition: all 0.18s ease;
+    backdrop-filter: blur(8px);
+    line-height: 1.2;
+}
+
+.morphic-badge-blue, .bubble-blue {
+    background: var(--status-blue-bg);
+    color: var(--status-blue-text);
+    border-color: var(--status-blue-border);
+}
+
+.morphic-badge-emerald, .bubble-green, .status-upcoming {
+    background: var(--status-emerald-bg);
+    color: var(--status-emerald-text);
+    border-color: var(--status-emerald-border);
+}
+
+.morphic-badge-amber, .bubble-amber, .status-pending_faculty {
+    background: var(--status-amber-bg);
+    color: var(--status-amber-text);
+    border-color: var(--status-amber-border);
+}
+
+.morphic-badge-purple, .bubble-purple, .status-pending_admin {
+    background: var(--status-purple-bg);
+    color: var(--status-purple-text);
+    border-color: var(--status-purple-border);
+}
+
+.morphic-badge-rose, .bubble-rose, .status-rejected {
+    background: var(--status-rose-bg);
+    color: var(--status-rose-text);
+    border-color: var(--status-rose-border);
+}
+
+/* --- NAVIGATION BAR (FROSTED GLASSMORPHISM) --- */
+.morphic-navbar, .desk-ruler-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 2.4rem;
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+}
+
+.nav-brand-rgcet {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.rgcet-logo-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+    transition: transform 0.2s ease;
+}
+.rgcet-logo-img:hover {
+    transform: scale(1.05);
+}
+
+.brand-college-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-name-main {
+    font-family: var(--font-heading);
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: var(--rgcet-navy);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+}
+
+.brand-name-sub {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
 }
 
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     list-style: none;
 }
 
-/* Modern Pill Navigation Tabs */
 .nav-tab-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--ink-pencil);
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    transition: all 0.2s ease;
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-full);
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-secondary);
     border: 1px solid transparent;
+    transition: all 0.18s ease;
 }
-
 .nav-tab-btn:hover {
-    color: var(--ink-black);
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--rgcet-royal);
+    border-color: rgba(37, 99, 235, 0.15);
 }
-
-[data-theme="dark"] .nav-tab-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
 .nav-tab-btn.active {
-    color: var(--ink-pen-blue);
-    background: var(--paper-sheet-bg);
-    border-color: var(--card-border);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    background: var(--rgcet-navy);
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(15, 43, 92, 0.25);
+}
+[data-theme="dark"] .nav-tab-btn.active {
+    background: var(--rgcet-royal);
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.35);
 }
 
-/* Paper Theme Switcher Button */
-.desk-lamp-btn {
-    background: var(--paper-sheet-bg);
-    border: 1.5px solid var(--card-border);
-    color: var(--ink-black);
-    padding: 0.45rem 0.9rem;
-    border-radius: 20px;
-    cursor: pointer;
+/* Minimalist Morphic Theme Toggle */
+.morphic-theme-toggle, .desk-lamp-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 700;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+    background: var(--glass-surface);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    box-shadow: var(--morphic-shadow-card);
     transition: all 0.2s ease;
 }
-
-.desk-lamp-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border-color: var(--ink-pen-blue);
+.morphic-theme-toggle:hover, .desk-lamp-btn:hover {
+    border-color: var(--rgcet-royal);
+    color: var(--rgcet-royal);
 }
-
-.lamp-bulb {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
+.toggle-indicator-dot, .lamp-bulb {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: #eab308;
-    box-shadow: 0 0 8px #facc15;
-    transition: all 0.3s ease;
+    background: #3B82F6;
+    box-shadow: 0 0 8px #3B82F6;
 }
 
-[data-theme="dark"] .lamp-bulb {
-    background: #60a5fa;
-    box-shadow: 0 0 8px #93c5fd;
-}
-
-/* User Profile Badge */
+/* User Account Badge */
 .user-desk-badge {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.35rem 0.8rem;
-    background: var(--paper-sheet-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
+    gap: 0.6rem;
+    background: var(--glass-surface);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-full);
     font-size: 0.85rem;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    box-shadow: var(--morphic-shadow-card);
 }
 
+.logout-button {
+    color: var(--status-rose-text);
+    border: 1px solid var(--status-rose-border);
+    border-radius: var(--radius-xs);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.profile-button {
+    color: var(--rgcet-royal);
+    border: 1px solid var(--status-blue-border);
+    border-radius: var(--radius-xs);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.profile-button:hover {
+    background: var(--status-blue-bg);
+}
+
+.logout-button:hover {
+    background: var(--status-rose-bg);
+}
+
+.simple-home-header, .simple-section {
+    margin-bottom: 1.5rem;
+}
+
+.simple-home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--status-blue-bg);
+    border: 1px solid var(--status-blue-border);
+    border-radius: var(--radius-md);
+}
+
+.simple-home-header h1, .simple-section h2, .simple-event-card h3, .simple-list-item h3, .simple-club-item h3 {
+    color: var(--text-primary);
+}
+
+.simple-home-header h1 {
+    max-width: 700px;
+    font-size: clamp(1.7rem, 4vw, 2.7rem);
+    line-height: 1.1;
+}
+
+.simple-home-header p:not(.simple-label) {
+    margin-top: 0.6rem;
+    color: var(--text-secondary);
+}
+
+.simple-home-actions, .simple-section-heading, .simple-filter, .simple-event-info {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.simple-home-actions {
+    flex-wrap: wrap;
+}
+
+.simple-section {
+    padding: 1.5rem;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+}
+
+.simple-section-heading {
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.simple-label {
+    color: var(--rgcet-royal);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.simple-filter {
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.simple-filter input, .simple-filter select {
+    flex: 1 1 160px;
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+    color: var(--text-primary);
+    background: var(--control-bg);
+    border: 1px solid var(--control-border);
+    border-radius: var(--radius-xs);
+}
+
+.simple-list, .simple-event-grid, .simple-club-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.simple-list-item, .simple-club-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.simple-list-item p, .simple-club-item p, .simple-event-card p, .simple-calendar p {
+    margin-top: 0.35rem;
+    color: var(--text-secondary);
+}
+
+.simple-list-item small {
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.simple-event-grid {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.simple-event-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1.2rem;
+}
+
+.simple-event-card p {
+    flex: 1;
+}
+
+.simple-event-info {
+    flex-wrap: wrap;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+}
+
+.simple-calendar {
+    text-align: center;
+}
+
+.simple-calendar .morphic-btn {
+    display: inline-block;
+    margin-top: 0.8rem;
+}
+
+.simple-empty {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+    .simple-home-header {
+        display: block;
+        padding: 1.3rem;
+    }
+
+    .simple-home-actions {
+        margin-top: 1rem;
+    }
+
+    .simple-section {
+        padding: 1rem;
+    }
+}
 .user-desk-avatar {
     width: 24px;
     height: 24px;
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    color: #FFFFFF;
     border-radius: 50%;
-    background: var(--ink-pen-blue);
-    color: #ffffff;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 800;
 }
 
-/* --- MAIN WORKSPACE & CRUMPLED PAPER SHEET --- */
-.desk-workspace, .paper-workspace {
-    position: relative;
-    z-index: 1;
-    max-width: 1280px;
-    margin: 2rem auto 3.5rem auto;
-    padding: 0 1.5rem;
+/* --- WORKSPACE LAYOUT --- */
+.desk-workspace {
+    max-width: 1260px;
+    margin: 1.8rem auto 3.5rem auto;
+    padding: 0 1.2rem;
 }
 
-/* The Crumpled Paper Sheet Container */
-.notebook-container, .paper-sheet {
-    position: relative;
-    background-color: var(--paper-sheet-bg);
-    background-image: var(--crease-overlay), var(--paper-texture-url);
-    background-size: cover, cover;
-    background-position: center, center;
-    border-radius: var(--radius-lg);
-    border: 1.5px solid var(--paper-sheet-border);
-    box-shadow: var(--paper-sheet-shadow);
-    min-height: 820px;
-    transition: all 0.3s ease;
-    overflow: hidden;
+/* Flash Alerts */
+.flash-alert {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem 1.4rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.8rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    backdrop-filter: blur(12px);
+    border: 1px solid transparent;
+}
+.alert-success {
+    background: var(--status-emerald-bg);
+    border-color: var(--status-emerald-border);
+    color: var(--status-emerald-text);
+}
+.alert-danger {
+    background: var(--status-rose-bg);
+    border-color: var(--status-rose-border);
+    color: var(--status-rose-text);
+}
+.alert-warning {
+    background: var(--status-amber-bg);
+    border-color: var(--status-amber-border);
+    color: var(--status-amber-text);
 }
 
-/* Realistic Dog-Ear Fold on top-right paper corner */
-.notebook-container::after, .paper-sheet::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.03) 60%, transparent 60%);
-    pointer-events: none;
-}
-
-[data-theme="dark"] .notebook-container::after, [data-theme="dark"] .paper-sheet::after {
-    background: linear-gradient(225deg, transparent 50%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 60%, transparent 60%);
-}
-
-/* Hide the old heavy spiral metal spine completely for clean, spacious width */
-.notebook-spine {
-    display: none !important;
-}
-
-/* Main Inner Page Content Area - clean, breathable, no horizontal ruled lines! */
-.notebook-page, .paper-content {
-    flex: 1;
+/* --- MINIMALIST MORPHIC HERO BANNER --- */
+.morphic-hero-banner, .rgcet-hero-banner {
     position: relative;
-    padding: 2.5rem 3rem;
-    width: 100%;
+    background: linear-gradient(135deg, #0F2B5C 0%, #1E3A8A 55%, #2563EB 100%);
+    color: #FFFFFF;
+    border-radius: var(--radius-xl);
+    padding: 3rem 2.8rem;
+    margin-bottom: 2.4rem;
+    box-shadow: 0 20px 50px -15px rgba(15, 43, 92, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+    overflow: hidden;
+}
+[data-theme="dark"] .morphic-hero-banner, [data-theme="dark"] .rgcet-hero-banner {
+    background: linear-gradient(135deg, #0B132B 0%, #1C2541 60%, #1E3A8A 100%);
+    box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Header Banner Inside the Paper Sheet */
-.notebook-tabs-bar {
+.hero-content-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 1.2rem;
-    margin-bottom: 1.8rem;
-    border-bottom: 1.5px dashed var(--card-border);
-    flex-wrap: wrap;
-    gap: 1rem;
+    gap: 2.5rem;
+    position: relative;
+    z-index: 2;
 }
 
-.notebook-title {
-    font-size: 1.95rem;
-    font-weight: 800;
-    color: var(--ink-black);
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    letter-spacing: -0.5px;
-}
-
-.pen-accent-icon {
-    font-size: 1.4rem;
-    color: var(--ink-pen-blue);
-}
-
-.hand-note {
-    font-family: var(--font-hand);
-    font-size: 1.35rem;
-    color: var(--ink-pen-blue);
-    line-height: 1.1;
-    display: inline-block;
-}
-
-/* --- TACTILE PAPER BUTTONS (CLEAN & MODERN) --- */
-.tactile-btn, .paper-btn {
+.hero-badge-tag {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.55rem 1.25rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
+    gap: 0.45rem;
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-full);
+    font-size: 0.76rem;
     font-weight: 700;
-    cursor: pointer;
-    border: 1.5px solid var(--card-border);
-    background-color: var(--paper-card);
-    color: var(--ink-black);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
-    transition: all 0.15s ease;
+    letter-spacing: 0.03em;
+    margin-bottom: 1rem;
+}
+
+.hero-title {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.6rem;
+}
+
+.hero-motto {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #93C5FD;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.01em;
+}
+
+.hero-stats-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-top: 1.8rem;
+}
+
+.hero-stat-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 0.75rem 1.3rem;
+    border-radius: var(--radius-md);
     text-align: center;
-    text-decoration: none;
+    min-width: 105px;
 }
 
-.tactile-btn:hover, .paper-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--ink-pencil);
+.hero-stat-num {
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1.1;
 }
 
-.tactile-btn:active, .paper-btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.hero-stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.85;
+    margin-top: 2px;
 }
 
-.tactile-btn-primary {
-    background-color: var(--btn-primary-bg) !important;
-    color: var(--btn-primary-text) !important;
-    border-color: var(--btn-primary-bg) !important;
-    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25) !important;
+/* Frosted Emblem Card */
+.morphic-emblem-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-xl);
+    padding: 1.8rem 1.6rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    max-width: 240px;
 }
 
-.tactile-btn-primary:hover {
-    background-color: var(--btn-primary-hover) !important;
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+/* --- BENTO-STYLE NOTICE BOARD / ANNOUNCEMENTS --- */
+.morphic-notice-board, .notice-board-shelf {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 2rem;
+    margin-bottom: 2.4rem;
+    box-shadow: var(--morphic-shadow-card);
 }
 
-.tactile-btn-success {
-    background-color: #10b981 !important;
-    color: #ffffff !important;
-    border-color: #059669 !important;
-    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25) !important;
+.morphic-marquee-wrap, .marquee-ticker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--control-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 1.3rem;
+    margin-top: 1.2rem;
+    overflow: hidden;
+    box-shadow: var(--morphic-shadow-inset);
 }
 
-.tactile-btn-danger {
-    background-color: #ef4444 !important;
-    color: #ffffff !important;
-    border-color: #dc2626 !important;
-    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.25) !important;
+.morphic-marquee-badge, .marquee-badge {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
-/* --- CRUMPLED PAPER MEMO SLIPS (STATS & NOTICES) --- */
-.sticky-note {
-    position: relative;
+/* Minimalist Bento Notice Tile */
+.morphic-notice-tile, .sticky-note {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
     padding: 1.4rem;
-    border-radius: var(--radius-sm);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: var(--morphic-shadow-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+.morphic-notice-tile:hover, .sticky-note:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: var(--morphic-shadow-hover);
+    border-color: var(--rgcet-royal);
 }
 
-.sticky-note:hover {
-    transform: translateY(-3px) rotate(0deg) !important;
-    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.12);
-    z-index: 5;
-}
-
-.sticky-tape {
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 16px;
-    background: var(--sticky-tape);
-    border-left: 1.5px dashed rgba(0,0,0,0.15);
-    border-right: 1.5px dashed rgba(0,0,0,0.15);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-}
-
-.sticky-yellow {
-    background: var(--sticky-yellow);
-    border-color: var(--sticky-yellow-border);
-}
-
-.sticky-mint {
-    background: var(--sticky-mint);
-    border-color: var(--sticky-mint-border);
-}
-
-.sticky-rose {
-    background: var(--sticky-rose);
-    border-color: var(--sticky-rose-border);
-}
-
-/* --- EVENT CARDS (CRUMPLED FLYER CARDS) --- */
+/* --- EVENT PAMPHLETS GRID --- */
 .events-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
     gap: 1.8rem;
-    margin-top: 1.5rem;
 }
 
-.event-index-card {
-    background: var(--paper-card);
-    border: 1.5px solid var(--card-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--card-shadow);
+.pamphlet-card {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--morphic-shadow-card);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.22s ease;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.event-index-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-shadow-hover);
-    border-color: var(--ink-pen-blue);
-}
-
-/* Paper clip removed for simplicity, clean layout */
-.paper-clip {
-    display: none !important;
-}
-
-.card-banner-box {
-    width: 100%;
-    height: 185px;
-    overflow: hidden;
+.pamphlet-banner-box {
     position: relative;
-    background: #0f172a;
+    height: 190px;
+    background: #0F172A;
+    overflow: hidden;
 }
 
-.card-banner-img {
+.pamphlet-banner-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.35s ease;
 }
-
-.event-index-card:hover .card-banner-img {
+.pamphlet-card:hover .pamphlet-banner-img {
     transform: scale(1.04);
 }
 
-.card-tag {
+.pamphlet-category-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    color: #FFFFFF;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pamphlet-fee-tag {
     position: absolute;
     bottom: 12px;
-    left: 12px;
-    background: var(--paper-card);
-    padding: 0.25rem 0.65rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    right: 12px;
+    font-size: 0.78rem;
     font-weight: 700;
-    color: var(--ink-black);
-    border: 1px solid var(--card-border);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+}
+.fee-free {
+    background: rgba(16, 185, 129, 0.92);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.fee-paid {
+    background: rgba(245, 158, 11, 0.92);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.card-body {
-    padding: 1.3rem;
-    flex: 1;
+.pamphlet-body {
+    padding: 1.4rem;
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
-.card-date-badge {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--ink-pen-blue);
-    margin-bottom: 0.4rem;
+.pamphlet-club-line {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--rgcet-royal);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.card-title {
-    font-size: 1.18rem;
+.pamphlet-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
     font-weight: 800;
-    color: var(--ink-black);
-    line-height: 1.35;
-    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 0.55rem;
 }
 
-.card-desc {
+.pamphlet-desc {
     font-size: 0.88rem;
-    color: var(--ink-pencil);
-    line-height: 1.5;
-    margin-bottom: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.45;
 }
 
-.card-meta-row {
+.pamphlet-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.2rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--glass-border);
+}
+.pamphlet-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pamphlet-footer {
     margin-top: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 0.8rem;
-    border-top: 1px dashed var(--card-border);
+    gap: 0.8rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--glass-border);
 }
 
-.card-fee {
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--ink-black);
-}
-
-.fee-free {
-    color: #10b981;
-    font-weight: 800;
-}
-
-/* --- PERFORATED ADMIT-ONE TICKET PASS --- */
-.ticket-container {
-    max-width: 680px;
-    margin: 2rem auto;
-    position: relative;
-    background: var(--ticket-bg);
-    border: 2px solid var(--ticket-edge);
+/* --- STATS TILES (DASHBOARDS) --- */
+.morphic-stat-card {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
-    display: flex;
+    padding: 1.4rem;
+    box-shadow: var(--morphic-shadow-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.morphic-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--morphic-shadow-hover);
+}
+
+.morphic-stat-label {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+}
+
+.morphic-stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.morphic-stat-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+}
+
+/* --- MORPHIC FORMS & RECESSED INPUTS --- */
+.morphic-form, .notebook-form {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: 2.4rem;
+    box-shadow: var(--morphic-shadow-card);
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.84rem;
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+    color: var(--text-primary);
+}
+
+.form-input, .form-select, .form-textarea, .morphic-input {
+    width: 100%;
+    padding: 0.75rem 1.1rem;
+    border: 1px solid var(--control-border);
+    border-radius: var(--radius-sm);
+    background: var(--control-bg);
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    box-shadow: var(--morphic-shadow-inset);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus, .morphic-input:focus {
+    outline: none;
+    border-color: var(--control-border-focus);
+    box-shadow: 0 0 0 3px var(--rgcet-royal-glow), var(--morphic-shadow-inset);
+    background: var(--glass-surface);
+}
+
+/* Segmented Control / Radio Pill Tabs */
+.morphic-segmented-tabs {
+    display: inline-flex;
+    background: var(--control-bg);
+    border: 1px solid var(--glass-border);
+    padding: 4px;
+    border-radius: var(--radius-full);
+    box-shadow: var(--morphic-shadow-inset);
+    gap: 4px;
+}
+.morphic-tab-option {
+    padding: 0.45rem 1.1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.morphic-tab-option.active {
+    background: var(--glass-surface);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* --- MORPHIC DATA TABLES --- */
+.morphic-table-wrap, .desk-table-wrap {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--morphic-shadow-card);
+    margin-top: 1.2rem;
 }
 
-/* Circular Punch Cuts on Ticket Borders */
-.ticket-container::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -16px;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--paper-sheet-bg);
-    border-right: 2px solid var(--ticket-edge);
-    z-index: 5;
+.morphic-table, .desk-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
 }
 
-.ticket-container::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: -16px;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--paper-sheet-bg);
-    border-left: 2px solid var(--ticket-edge);
-    z-index: 5;
+.morphic-table th, .desk-table th {
+    background: rgba(37, 99, 235, 0.04);
+    padding: 0.95rem 1.2rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.morphic-table td, .desk-table td {
+    padding: 0.95rem 1.2rem;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-primary);
+}
+
+.morphic-table tr:last-child td, .desk-table tr:last-child td {
+    border-bottom: none;
+}
+
+.morphic-table tr:hover, .desk-table tr:hover {
+    background: rgba(37, 99, 235, 0.03);
+}
+
+/* --- DIGITAL BOARDING PASS / EVENT TICKET --- */
+.ticket-container {
+    display: flex;
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--morphic-shadow-card);
+    max-width: 720px;
+    margin: 2rem auto;
+    overflow: hidden;
+    position: relative;
 }
 
 .ticket-main {
     flex: 1;
     padding: 2.2rem;
-    border-right: 2px dashed var(--ticket-edge);
+    border-right: 2px dashed var(--glass-border);
     position: relative;
 }
 
 .ticket-stub {
-    width: 210px;
-    background: rgba(217, 119, 6, 0.04);
-    padding: 1.5rem;
+    width: 220px;
+    background: rgba(37, 99, 235, 0.03);
+    padding: 2rem 1.4rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    flex-shrink: 0;
 }
 
-.ticket-header {
-    border-bottom: 1.5px solid var(--card-border);
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-}
-
-.ticket-org {
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--ink-pencil);
-}
-
-.ticket-event-name {
-    font-size: 1.45rem;
-    font-weight: 800;
-    color: var(--ink-black);
-    margin-top: 0.25rem;
-}
-
-.ticket-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.2rem;
-}
-
-.ticket-field label {
-    display: block;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--ink-pencil);
-    font-weight: 700;
-}
-
-.ticket-field span {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--ink-black);
+.ticket-qr-img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    background: #FFFFFF;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--glass-border);
 }
 
 .ticket-code-badge {
     font-family: var(--font-mono);
-    font-size: 1.1rem;
     font-weight: 800;
-    color: var(--ink-pen-blue);
-    background: rgba(37, 99, 235, 0.08);
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    border: 1px dashed var(--ink-pen-blue);
-    display: inline-block;
+    font-size: 0.85rem;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    color: var(--rgcet-royal);
+    letter-spacing: 0.05em;
 }
 
-.ticket-qr-img {
-    width: 140px;
-    height: 140px;
-    border: 2px solid var(--ink-black);
-    border-radius: 8px;
-    background: #ffffff;
-    padding: 6px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+.ticket-header {
+    margin-bottom: 1.4rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-border);
 }
-
-/* Rubber Ink Stamps */
-.rubber-stamp {
-    display: inline-block;
-    padding: 0.35rem 0.85rem;
+.ticket-org {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    font-weight: 900;
-    font-size: 0.82rem;
-    letter-spacing: 1px;
-    border: 2px solid;
-    border-radius: 6px;
-    transform: rotate(-2deg);
+}
+.ticket-event-name {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.25;
 }
 
-.stamp-verified {
-    color: var(--stamp-green);
-    border-color: var(--stamp-green);
-}
-
-.stamp-pending {
-    color: var(--stamp-orange);
-    border-color: var(--stamp-orange);
-}
-
-.stamp-rejected {
-    color: var(--stamp-red);
-    border-color: var(--stamp-red);
-}
-
-.stamp-attended {
-    color: var(--stamp-blue);
-    border-color: var(--stamp-blue);
-}
-
-/* --- FORMS & WRITING FIELDS --- */
-.notebook-form {
-    background: var(--paper-card);
-    border: 1.5px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: 2.2rem;
-    box-shadow: var(--card-shadow);
-}
-
-.form-group {
+.ticket-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
     margin-bottom: 1.4rem;
 }
-
-.form-label {
+.ticket-field label {
     display: block;
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--ink-black);
-    margin-bottom: 0.4rem;
-}
-
-.form-input, .form-select, .form-textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-sm);
-    border: 1.5px solid var(--card-border);
-    background: var(--paper-sheet-bg);
-    color: var(--ink-black);
-    font-size: 0.95rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-    outline: none;
-    border-color: var(--ink-pen-blue);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* --- SEARCH & CATEGORY FILTER TABS --- */
-.filter-shelf {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    margin: 1.2rem 0;
-}
-
-.filter-chip {
-    padding: 0.45rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    background: var(--paper-card);
-    border: 1px solid var(--card-border);
-    color: var(--ink-pencil);
-    transition: all 0.2s ease;
-}
-
-.filter-chip:hover, .filter-chip.active {
-    color: var(--ink-pen-blue);
-    border-color: var(--ink-pen-blue);
-    background: rgba(37, 99, 235, 0.06);
-}
-
-.search-input-box {
-    position: relative;
-    max-width: 380px;
-    width: 100%;
-}
-
-.search-input-box input {
-    width: 100%;
-    padding: 0.65rem 1rem 0.65rem 2.4rem;
-    border-radius: 20px;
-    border: 1.5px solid var(--card-border);
-    background: var(--paper-card);
-    color: var(--ink-black);
-    font-size: 0.9rem;
-}
-
-.search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--ink-pencil);
-}
-
-/* --- LEDGER TABLE (ADMIN & PARTICIPANTS) --- */
-.ledger-table-container {
-    background: var(--paper-card);
-    border: 1.5px solid var(--card-border);
-    border-radius: var(--radius-md);
-    overflow-x: auto;
-    box-shadow: var(--card-shadow);
-}
-
-.ledger-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-    text-align: left;
-}
-
-.ledger-table th {
-    background: rgba(0, 0, 0, 0.03);
-    padding: 0.9rem 1.2rem;
-    font-weight: 800;
-    color: var(--ink-pencil);
+    font-size: 0.7rem;
     text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+}
+.ticket-field span {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+/* Rubber Stamp Badges */
+.rubber-stamp {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-xs);
+    font-weight: 800;
     font-size: 0.78rem;
-    letter-spacing: 0.5px;
-    border-bottom: 1.5px solid var(--card-border);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1.5px solid;
+}
+.stamp-attended, .stamp-verified {
+    color: var(--status-emerald-text);
+    border-color: var(--status-emerald-border);
+    background: var(--status-emerald-bg);
+}
+.stamp-pending {
+    color: var(--status-amber-text);
+    border-color: var(--status-amber-border);
+    background: var(--status-amber-bg);
+}
+.stamp-rejected {
+    color: var(--status-rose-text);
+    border-color: var(--status-rose-border);
+    background: var(--status-rose-bg);
 }
 
-[data-theme="dark"] .ledger-table th {
-    background: rgba(255, 255, 255, 0.03);
+/* Certificate Frame */
+.cert-frame {
+    background: var(--glass-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: 3rem 2.4rem;
+    text-align: center;
+    box-shadow: var(--morphic-shadow-card);
+    max-width: 840px;
+    margin: 1.5rem auto;
+    position: relative;
 }
 
-.ledger-table td {
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--card-border);
-    color: var(--ink-black);
-}
-
-.ledger-table tr:hover td {
-    background: rgba(37, 99, 235, 0.04);
-}
-
-/* Flash alerts styled as pinned paper notes */
-.flash-alert {
-    padding: 0.9rem 1.2rem;
-    border-radius: var(--radius-sm);
-    margin-bottom: 1.5rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-}
-
-.alert-success {
-    background: var(--sticky-mint);
-    border: 1px solid var(--sticky-mint-border);
-    color: #15803d;
-}
-
-.alert-danger {
-    background: var(--sticky-rose);
-    border: 1px solid var(--sticky-rose-border);
-    color: #b91c1c;
-}
-
-.alert-warning {
-    background: var(--sticky-yellow);
-    border: 1px solid var(--sticky-yellow-border);
-    color: #a16207;
-}
-
-/* --- RESPONSIVE ADJUSTMENTS --- */
-@media (max-width: 900px) {
-    .desk-workspace, .paper-workspace {
-        padding: 0 0.8rem;
-        margin-top: 1rem;
-    }
-    .notebook-page, .paper-content {
-        padding: 1.5rem 1.2rem;
-    }
+@media (max-width: 640px) {
     .ticket-container {
         flex-direction: column;
     }
     .ticket-main {
         border-right: none;
-        border-bottom: 2px dashed var(--ticket-edge);
-        padding: 1.5rem;
+        border-bottom: 2px dashed var(--glass-border);
     }
     .ticket-stub {
         width: 100%;
-        padding: 1.5rem;
+        padding: 1.6rem;
+    }
+}
+
+
+/* Clean Micro Highlights */
+.highlight-yellow, .highlight-mint, .highlight-rose, .highlight-blue {
+    padding: 2px 8px;
+    border-radius: var(--radius-xs);
+    font-weight: 600;
+}
+.highlight-yellow { background: var(--status-amber-bg); color: var(--status-amber-text); }
+.highlight-mint   { background: var(--status-emerald-bg); color: var(--status-emerald-text); }
+.highlight-rose   { background: var(--status-rose-bg); color: var(--status-rose-text); }
+.highlight-blue   { background: var(--status-blue-bg); color: var(--status-blue-text); }
+
+/* Clean Minimalist Typography Accents (No Cursive Hand-Notes) */
+.hand-note {
+    font-family: var(--font-main);
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    font-style: normal;
+}
+
+/* Clean minimal underline */
+.hand-drawn-underline {
+    position: relative;
+    display: inline-block;
+}
+.hand-drawn-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--rgcet-royal);
+    border-radius: 2px;
+}
+
+/* Remove Obsolete Doodle Decor */
+.notebook-spiral-header, .spiral-ring, .sticky-tape, .water-bottle-sticker, .doodle-pencil {
+    display: none !important;
+}
+
+/* Responsive Styles */
+@media (max-width: 840px) {
+    .morphic-navbar, .desk-ruler-nav {
+        flex-direction: column;
+        gap: 0.9rem;
+        padding: 0.9rem 1.2rem;
+    }
+    .hero-content-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .hero-title {
+        font-size: 1.9rem;
+    }
+    .morphic-page-body, .notebook-page {
+        padding: 1.4rem;
+    }
+    .events-grid {
+        grid-template-columns: 1fr;
     }
 }

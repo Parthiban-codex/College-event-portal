@@ -1,143 +1,186 @@
 {% extends "base.html" %}
 
-{% block title %}Organizer Dashboard | CampusPulse{% endblock %}
+{% block title %}Central Administration Desk | RGCET Event Hub{% endblock %}
 
 {% block content %}
-<!-- Organizer Header -->
-<div class="notebook-tabs-bar">
+<!-- Header Bar -->
+<div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
     <div>
-        <h1 class="notebook-title">
-            <span class="pen-accent-icon">🛠️</span>
-            Organizer Dashboard
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+            <span class="morphic-badge morphic-badge-blue">Central Administration</span>
+            <span class="morphic-badge morphic-badge-emerald">RGCET Administration</span>
+        </div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
+            College Executive Desk
         </h1>
-        <p class="hand-note" style="margin-top: 4px;">~ Event operations, gate check-in, revenue tracking & student attendance</p>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 2px;">
+            Central governance for event approvals, deletion requests, campus venues & public notices
+        </p>
     </div>
 
+    <!-- Quick Actions -->
     <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-        <a href="{{ url_for('admin_scanner') }}" class="tactile-btn tactile-btn-primary" style="background: #d97706; border-color: #b45309;">
-            📷 Live QR Gate Scanner
+        <a href="{{ url_for('admin_create_event') }}" class="morphic-btn morphic-btn-primary">
+            <span>➕</span> Publish Event Directly
         </a>
-        <a href="{{ url_for('admin_create_event') }}" class="tactile-btn tactile-btn-primary">
-            + Draft New Event
+        <a href="{{ url_for('admin_approvals') }}" class="morphic-btn" style="position: relative;">
+            <span>📥</span> Event Approvals
+            {% if pending_admin_count > 0 %}
+                <span class="morphic-badge morphic-badge-rose" style="font-size: 0.7rem; padding: 1px 6px; margin-left: 4px;">{{ pending_admin_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('admin_deletion_requests') }}" class="morphic-btn" style="position: relative;">
+            <span>🗑️</span> Deletion Requests
+            {% if pending_deletion_count > 0 %}
+                <span class="morphic-badge morphic-badge-amber" style="font-size: 0.7rem; padding: 1px 6px; margin-left: 4px;">{{ pending_deletion_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('admin_announcements') }}" class="morphic-btn">
+            <span>📢</span> Broadcast Notice
         </a>
     </div>
 </div>
 
-<!-- Desk Navigation Divider Tabs -->
-<div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
-    <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn" style="background: var(--paper-card); font-weight: 800; color: var(--ink-pen-blue); border-color: var(--ink-pen-blue);">
-        📊 Overview
-    </a>
-    <a href="{{ url_for('admin_events') }}" class="tactile-btn">
-        📋 Manage Events
-    </a>
-    <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">
-        💳 Verify Payments
-    </a>
-    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">
-        📷 QR Scanner
-    </a>
-    <a href="{{ url_for('admin_participants') }}" class="tactile-btn">
-        👥 Participants & CSV
-    </a>
-    <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">
-        📢 Announcements
-    </a>
-    <a href="{{ url_for('admin_feedback') }}" class="tactile-btn">
-        ⭐ Reviews
-    </a>
-    <a href="{{ url_for('admin_venues') }}" class="tactile-btn">
-        🏛️ Campus Venues
+<!-- Pending Approvals Alert Banner -->
+{% if pending_events|length > 0 %}
+<div class="flash-alert alert-warning" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <span style="font-size: 1.6rem;">⚡</span>
+        <div>
+            <strong>Action Pending:</strong> You have <strong>{{ pending_events|length }}</strong> event proposal(s) endorsed by Club Faculty Advisors waiting for your final approval to go live on the homepage!
+        </div>
+    </div>
+    <a href="{{ url_for('admin_approvals') }}" class="morphic-btn morphic-btn-primary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+        Review & Publish ➔
     </a>
 </div>
+{% endif %}
 
-<!-- 4 Key Metrics (Desk Sticky Notes) -->
+<!-- Pending Deletions Alert Banner -->
+{% if pending_deletions|length > 0 %}
+<div class="flash-alert alert-danger" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <span style="font-size: 1.6rem;">🗑️</span>
+        <div>
+            <strong>Deletion Requests:</strong> <strong>{{ pending_deletions|length }}</strong> club event deletion request(s) awaiting your decision.
+        </div>
+    </div>
+    <a href="{{ url_for('admin_deletion_requests') }}" class="morphic-btn morphic-btn-danger" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+        Review Requests ➔
+    </a>
+</div>
+{% endif %}
+
+<!-- Executive Stats Grid (Minimalist 2D Morphic Tiles) -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2.2rem;">
-    <div class="sticky-note sticky-yellow" style="transform: rotate(-1deg);">
-        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">Published Events</p>
-        <p style="font-size: 2.4rem; font-weight: 900; color: #713f12; margin: 4px 0;">{{ stats.total_events }}</p>
-        <small class="hand-note" style="color: #a16207;">Active on campus</small>
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Active Live Events</div>
+        <div class="morphic-stat-value" style="color: var(--rgcet-royal);">{{ stats.total_events }}</div>
+        <div class="morphic-stat-sub">Published on homepage</div>
     </div>
 
-    <div class="sticky-note sticky-mint" style="transform: rotate(1deg);">
-        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #166534;">Passes Issued</p>
-        <p style="font-size: 2.4rem; font-weight: 900; color: #14532d; margin: 4px 0;">{{ stats.total_registrations }}</p>
-        <small class="hand-note" style="color: #15803d;">Total registrations</small>
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Total Passes Claimed</div>
+        <div class="morphic-stat-value" style="color: #10B981;">{{ stats.total_registrations }}</div>
+        <div class="morphic-stat-sub">Verified QR tickets</div>
     </div>
 
-    <div class="sticky-note sticky-rose" style="transform: rotate(-0.5deg);">
-        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #9f1239;">Gate Check-ins</p>
-        <p style="font-size: 2.4rem; font-weight: 900; color: #881337; margin: 4px 0;">{{ stats.total_attended }}</p>
-        <small class="hand-note" style="color: #be123c;">Attended attendees</small>
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Total Attended</div>
+        <div class="morphic-stat-value" style="color: #8B5CF6;">{{ stats.total_attended }}</div>
+        <div class="morphic-stat-sub">Verified by Club QR Desks</div>
     </div>
 
-    <div class="sticky-note sticky-yellow" style="transform: rotate(1.5deg);">
-        <p style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #854d0e;">Revenue Collected</p>
-        <p style="font-size: 2.4rem; font-weight: 900; color: #713f12; margin: 4px 0;">₹{{ "%.0f"|format(stats.total_revenue) }}</p>
-        <small class="hand-note" style="color: #a16207;">Via UPI verification</small>
+    <div class="morphic-stat-card">
+        <div class="morphic-stat-label">Verified Revenue</div>
+        <div class="morphic-stat-value" style="color: #F59E0B;">₹{{ "%.0f"|format(stats.total_revenue) }}</div>
+        <div class="morphic-stat-sub">Paid event registrations</div>
     </div>
 </div>
 
-<!-- Quick Event Overview Ledger -->
-<div style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
-        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black);">
-            📋 Active Events & Capacity Ledger
+<!-- Active Events Overview -->
+<div style="margin-bottom: 2.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
+            🎪 Current Published Campus Events
         </h2>
-        <a href="{{ url_for('admin_events') }}" class="hand-note" style="font-size: 1.2rem; color: var(--ink-pen-blue);">Manage All Events ➔</a>
+        <a href="{{ url_for('admin_events') }}" style="font-size: 0.88rem; color: var(--rgcet-royal); font-weight: 700;">
+            Manage All Events ➔
+        </a>
     </div>
 
-    <div class="ledger-table-container">
-        <table class="ledger-table">
-            <thead>
-                <tr>
-                    <th>Event Title</th>
-                    <th>Category</th>
-                    <th>Date & Time</th>
-                    <th>Venue</th>
-                    <th>Enrolled / Seats</th>
-                    <th>Fee</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if events %}
-                    {% for e in events %}
+    {% if events %}
+        <div class="morphic-table-wrap">
+            <table class="morphic-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Host Club</th>
+                        <th>Date & Time</th>
+                        <th>Venue</th>
+                        <th>Enrollment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ev in events %}
                         <tr>
-                            <td>
-                                <strong>{{ e.title }}</strong>
-                            </td>
-                            <td><span class="card-tag" style="position: static;">{{ e.category }}</span></td>
-                            <td style="font-family: var(--font-mono); font-size: 0.85rem;">
-                                {{ e.event_date|datetimeformat('%b %d, %Y') }}
-                            </td>
-                            <td>{{ e.venue_name or 'Main Ground' }}</td>
-                            <td>
-                                <strong>{{ e.registered_count or 0 }}</strong> / {{ e.capacity }}
+                            <td style="font-weight: 800;">
+                                {{ ev.title }}
                             </td>
                             <td>
-                                {% if e.fee == 0 %}
-                                    <span class="fee-free">FREE</span>
-                                {% else %}
-                                    <strong>₹{{ "%.0f"|format(e.fee) }}</strong>
-                                {% endif %}
+                                <span class="morphic-badge morphic-badge-blue" style="font-size: 0.72rem;">{{ ev.club_name or 'Central Desk' }}</span>
                             </td>
                             <td>
-                                <a href="{{ url_for('admin_edit_event', event_id=e.id) }}" class="tactile-btn" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">
-                                    Edit ✏️
-                                </a>
+                                <div>{{ ev.event_date|datetimeformat('%b %d, %Y') }}</div>
+                                <small style="color: var(--text-muted);">{{ ev.start_time|timeformat }}</small>
+                            </td>
+                            <td>{{ ev.venue_name or 'Main Auditorium' }}</td>
+                            <td>
+                                <strong>{{ ev.registered_count or 0 }}</strong> / {{ ev.capacity }}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.4rem;">
+                                    <a href="{{ url_for('admin_export_attendance', event_id=ev.id) }}" class="morphic-btn" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; background: var(--status-emerald-bg); color: var(--status-emerald-text); border-color: var(--status-emerald-border);">
+                                        📥 Excel
+                                    </a>
+                                    <a href="{{ url_for('admin_edit_event', event_id=ev.id) }}" class="morphic-btn" style="padding: 0.3rem 0.65rem; font-size: 0.75rem;">
+                                        Edit
+                                    </a>
+                                    <form method="POST" action="{{ url_for('admin_delete_event', event_id=ev.id) }}" style="display: inline;" onsubmit="return confirm('Directly delete this event?');">
+                                        <button type="submit" class="morphic-btn morphic-btn-danger" style="padding: 0.3rem 0.65rem; font-size: 0.75rem;">
+                                            ✕
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: var(--ink-pencil); padding: 2rem;">
-                            No events scheduled yet. <a href="{{ url_for('admin_create_event') }}" style="color: var(--ink-pen-blue); font-weight: 700;">Draft one now</a>.
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 </div>
+
+<!-- Administration Quick Links Bento Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;">
+    <a href="{{ url_for('admin_venues') }}" class="morphic-card morphic-card-interactive" style="padding: 1.5rem;">
+        <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">🏛️</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.2rem;">Campus Venues</h3>
+        <p style="font-size: 0.86rem; color: var(--text-secondary);">Manage auditoriums, seminar halls, sports complexes, and computing labs.</p>
+    </a>
+
+    <a href="{{ url_for('admin_announcements') }}" class="morphic-card morphic-card-interactive" style="padding: 1.5rem;">
+        <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">📢</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.2rem;">Notice Board</h3>
+        <p style="font-size: 0.86rem; color: var(--text-secondary);">Publish official college circulars & notifications visible on the open homepage.</p>
+    </a>
+
+    <a href="{{ url_for('admin_participants') }}" class="morphic-card morphic-card-interactive" style="padding: 1.5rem;">
+        <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">📊</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.2rem;">Attendance & Excel Reports</h3>
+        <p style="font-size: 0.86rem; color: var(--text-secondary);">Download formatted attendee spreadsheets for any event across all clubs.</p>
+    </a>
+</div>
+
 {% endblock %}
