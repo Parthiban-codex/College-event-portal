@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS `club_members` (
     `phone` VARCHAR(20) NOT NULL,
     `department` VARCHAR(100) NOT NULL,
     `role` ENUM('faculty', 'leader', 'ex_leader', 'coordinator', 'volunteer') NOT NULL DEFAULT 'volunteer',
+    `status` ENUM('active', 'withdrawn') NOT NULL DEFAULT 'active',
+    `can_download_attendance` BOOLEAN NOT NULL DEFAULT FALSE,
     `password_hash` VARCHAR(255) NOT NULL,
     `member_code` VARCHAR(64) NOT NULL UNIQUE,
     `qr_code_image` VARCHAR(255) NULL,

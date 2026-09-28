@@ -84,10 +84,10 @@
                         <td>
                             <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                                 {% if ev.status == 'upcoming' %}
-                                    {% if session.get('club_role') in ['faculty', 'leader'] or ev.attendance_incharge_member_id == session.get('user_id') %}
                                     <a href="{{ url_for('club_attendance_desk', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: #DCFCE7; color: #166534; border-color: #86EFAC;" title="Gate QR Attendance">
                                         🚪 QR Desk
                                     </a>
+                                    {% if can_export_attendance %}
                                     <a href="{{ url_for('club_export_attendance', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;" title="Download Excel (.xlsx)">
                                         📥 Excel
                                     </a>
@@ -101,6 +101,11 @@
                                     <a href="{{ url_for('event_details', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;">
                                         View Pamphlet
                                     </a>
+                                    {% if can_export_attendance %}
+                                        <a href="{{ url_for('club_export_attendance', event_id=ev.id) }}" class="tactile-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;" title="Download Excel (.xlsx)">
+                                            📥 Excel
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </td>

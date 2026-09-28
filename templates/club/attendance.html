@@ -25,9 +25,11 @@
 
     <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
         <!-- Download Excel (.xlsx) Button -->
-        <a href="{{ url_for('club_export_attendance', event_id=event.id) }}" class="morphic-btn morphic-btn-primary" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important; border-color: #10B981 !important;">
-            <span>📥</span> Download Attendance (.xlsx)
-        </a>
+        {% if can_export_attendance %}
+            <a href="{{ url_for('club_export_attendance', event_id=event.id) }}" class="morphic-btn morphic-btn-primary" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important; border-color: #10B981 !important;">
+                <span>📥</span> Download Attendance (.xlsx)
+            </a>
+        {% endif %}
         <a href="{{ url_for('club_events') }}" class="morphic-btn">
             <span>🔙</span> Club Events
         </a>
@@ -38,7 +40,7 @@
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2.2rem;">
     <div class="morphic-stat-card">
         <div class="morphic-stat-label">Total Passes Issued</div>
-        <div class="morphic-stat-value" style="color: var(--rgcet-royal);">{{ participants|length }}</div>
+        <div class="morphic-stat-value" style="color: var(--rgcet-royal);">{{ total_participants }}</div>
         <div class="morphic-stat-sub">Venue Capacity: {{ event.capacity }}</div>
     </div>
 
@@ -50,7 +52,7 @@
 
     <div class="morphic-stat-card">
         <div class="morphic-stat-label">Remaining</div>
-        <div id="stat-remaining-count" class="morphic-stat-value" style="color: #F59E0B;">{{ participants|length - attended_count }}</div>
+        <div id="stat-remaining-count" class="morphic-stat-value" style="color: #F59E0B;">{{ total_participants - attended_count }}</div>
         <div class="morphic-stat-sub">Pending arrival & gate check-in</div>
     </div>
 </div>
@@ -86,7 +88,7 @@
         </h3>
 
         <form id="manualCheckinForm" onsubmit="handleManualCheckin(event)" style="display: flex; gap: 0.6rem; margin-bottom: 1.2rem;">
-            <input type="text" id="manualTicketCode" class="morphic-input" placeholder="e.g. RGCET-A1B2C3" required style="font-family: var(--font-mono); text-transform: uppercase; font-weight: 700;">
+            <input type="text" id="manualTicketCode" class="morphic-input" placeholder="Enter ticket code" required style="font-family: var(--font-mono); text-transform: uppercase; font-weight: 700;">
             <button type="submit" class="morphic-btn morphic-btn-primary" style="padding: 0.6rem 1.2rem; white-space: nowrap;">
                 Verify Pass ➔
             </button>
@@ -103,15 +105,18 @@
     </div>
 </div>
 
+{% if can_view_attendance %}
 <!-- Attendees Roster Table -->
 <div>
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
         <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--ink-black);">
             👥 Registered Attendees Directory ({{ participants|length }})
         </h2>
-        <a href="{{ url_for('club_export_attendance', event_id=event.id) }}" class="tactile-btn" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
-            📥 Export to Excel (.xlsx)
-        </a>
+        {% if can_export_attendance %}
+            <a href="{{ url_for('club_export_attendance', event_id=event.id) }}" class="tactile-btn" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+                📥 Export to Excel (.xlsx)
+            </a>
+        {% endif %}
     </div>
 
     {% if participants %}
@@ -180,6 +185,7 @@
         </div>
     {% endif %}
 </div>
+{% endif %}
 
 <script>
 const eventId = {{ event.id }};

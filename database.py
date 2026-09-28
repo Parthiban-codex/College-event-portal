@@ -122,6 +122,8 @@ def init_db():
                 phone VARCHAR(20) NOT NULL,
                 department VARCHAR(100) NOT NULL,
                 role ENUM('faculty', 'leader', 'coordinator', 'volunteer') NOT NULL DEFAULT 'volunteer',
+                status ENUM('active', 'withdrawn') NOT NULL DEFAULT 'active',
+                can_download_attendance BOOLEAN NOT NULL DEFAULT FALSE,
                 password_hash VARCHAR(255) NOT NULL,
                 member_code VARCHAR(64) NOT NULL UNIQUE,
                 qr_code_image VARCHAR(255) NULL,
@@ -303,6 +305,16 @@ def migrate_schema_columns(cursor):
             cursor.execute("ALTER TABLE club_members MODIFY COLUMN role ENUM('faculty', 'leader', 'ex_leader', 'coordinator', 'volunteer') NOT NULL DEFAULT 'volunteer'")
     except Exception as e:
         print(f"Migration note (club member roles): {e}")
+
+    try:
+        cursor.execute("SHOW COLUMNS FROM club_members LIKE 'status'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE club_members ADD COLUMN status ENUM('active', 'withdrawn') NOT NULL DEFAULT 'active' AFTER role")
+        cursor.execute("SHOW COLUMNS FROM club_members LIKE 'can_download_attendance'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE club_members ADD COLUMN can_download_attendance BOOLEAN NOT NULL DEFAULT FALSE AFTER status")
+    except Exception as e:
+        print(f"Migration note (club member permissions): {e}")
 
     try:
         cursor.execute("SHOW COLUMNS FROM events LIKE 'attendance_incharge_member_id'")

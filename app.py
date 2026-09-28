@@ -55,7 +55,7 @@ def generate_payment_qr(upi_id, event_title):
     filepath = os.path.join(Config.PAYMENT_QRS_FOLDER, filename)
     
     clean_title = "".join(c for c in event_title if c.isalnum() or c in (' ', '-', '_')).strip()
-    upi_payload = f"upi://pay?pa={upi_id}&pn=RGCET%20Events&tn={clean_title.replace(' ', '%20')}&cu=INR"
+    upi_payload = f"upi://pay?pa={upi_id}&pn=Campus%20Events&tn={clean_title.replace(' ', '%20')}&cu=INR"
     
     qr = qrcode.QRCode(
         version=1,
@@ -100,16 +100,16 @@ def build_attendance_excel(event, participants):
         bottom=Side(style='thin', color='CBD5E1')
     )
 
-    # Row 1-2: College Header Banner
+    # Row 1-2: Attendance Ledger Header
     ws.merge_cells('A1:K1')
-    ws['A1'] = "RAJIV GANDHI COLLEGE OF ENGINEERING AND TECHNOLOGY (RGCET)"
+    ws['A1'] = "CAMPUS EVENT ATTENDANCE LEDGER"
     ws['A1'].font = title_font
     ws['A1'].fill = navy_fill
     ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 28
 
     ws.merge_cells('A2:K2')
-    ws['A2'] = "Campus Event Attendance & Verification Ledger • Innovation Through Information"
+    ws['A2'] = "Event check-in and verification record"
     ws['A2'].font = sub_font
     ws['A2'].fill = navy_fill
     ws['A2'].alignment = Alignment(horizontal="center", vertical="center")
@@ -122,9 +122,9 @@ def build_attendance_excel(event, participants):
     ws['F4'] = str(event['event_date'])
     
     ws['A5'] = "Venue:"
-    ws['B5'] = f"{event.get('venue_name', 'Campus')} ({event.get('venue_building', 'RGCET')})"
+    ws['B5'] = f"{event.get('venue_name', 'Campus')} ({event.get('venue_building', 'Campus')})"
     ws['E5'] = "Host Club:"
-    ws['F5'] = event.get('club_name', 'RGCET Central Desk')
+    ws['F5'] = event.get('club_name', 'Central Events Desk')
 
     ws['A6'] = "Total Registrations:"
     ws['B6'] = len(participants)
@@ -223,7 +223,7 @@ def student_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session or session.get('role') != 'student':
-            flash('Access restricted to enrolled RGCET students.', 'danger')
+            flash('Access is restricted to registered students.', 'danger')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -243,8 +243,44 @@ def club_required(f):
         if 'user_id' not in session or session.get('role') != 'club':
             flash('Club portal access required.', 'danger')
             return redirect(url_for('login'))
+        if not get_active_club_member():
+            session.clear()
+            flash('Your club membership is inactive. Please contact your club administrator.', 'warning')
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
+def get_active_club_member():
+    if session.get('role') != 'club' or 'user_id' not in session:
+        return None
+    db = get_db_connection()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("SELECT id, club_id, role, status, can_download_attendance FROM club_members WHERE id = %s AND club_id = %s AND status = 'active'", (session['user_id'], session.get('club_id')))
+            return cursor.fetchone()
+    finally:
+        db.close()
+
+def find_venue_conflict(db, cursor, venue_id, event_date, start_time, end_time, exclude_event_id=None):
+    db.begin()
+    cursor.execute("SELECT id FROM venues WHERE id = %s FOR UPDATE", (venue_id,))
+    if not cursor.fetchone():
+        db.rollback()
+        return {'title': 'an unavailable venue'}
+    query = """
+        SELECT id, title, start_time, end_time
+        FROM events
+        WHERE venue_id = %s AND event_date = %s
+          AND status NOT IN ('rejected', 'cancelled')
+          AND start_time < %s AND end_time > %s
+    """
+    params = [venue_id, event_date, end_time, start_time]
+    if exclude_event_id is not None:
+        query += " AND id <> %s"
+        params.append(exclude_event_id)
+    query += " LIMIT 1"
+    cursor.execute(query, params)
+    return cursor.fetchone()
 
 def club_leader_or_faculty_required(f):
     @wraps(f)
@@ -252,6 +288,11 @@ def club_leader_or_faculty_required(f):
         if 'user_id' not in session or session.get('role') != 'club' or session.get('club_role') not in ('leader', 'faculty'):
             flash('Only Club Faculty Advisors and Club Leaders have permission for this action.', 'warning')
             return redirect(url_for('club_dashboard'))
+        member = get_active_club_member()
+        if not member or member['role'] not in ('leader', 'faculty'):
+            session.clear()
+            flash('Your club permissions are no longer active.', 'warning')
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -261,6 +302,11 @@ def club_faculty_required(f):
         if 'user_id' not in session or session.get('role') != 'club' or session.get('club_role') != 'faculty':
             flash('Club Faculty Advisor authorization required.', 'warning')
             return redirect(url_for('club_dashboard'))
+        member = get_active_club_member()
+        if not member or member['role'] != 'faculty':
+            session.clear()
+            flash('Your club permissions are no longer active.', 'warning')
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -301,7 +347,7 @@ def inject_global_data():
                         SELECT m.*, c.name as club_name, c.code as club_code
                         FROM club_members m
                         JOIN clubs c ON m.club_id = c.id
-                        WHERE m.id = %s
+                        WHERE m.id = %s AND m.status = 'active'
                     """, (session['user_id'],))
                     current_user = cursor.fetchone()
                     if current_user:
@@ -309,10 +355,13 @@ def inject_global_data():
                         if current_user['role'] == 'faculty':
                             cursor.execute("SELECT COUNT(*) as count FROM events WHERE club_id = %s AND status = 'pending_faculty'", (current_user['club_id'],))
                             pending_faculty_count = cursor.fetchone()['count']
+            cursor.execute("SELECT DISTINCT category FROM events ORDER BY category")
+            event_categories = [row['category'] for row in cursor.fetchall() if row['category']]
     finally:
         db.close()
             
     categories = ['Hackathon', 'Symposium', 'Workshop', 'Cultural Fest', 'Tech & Robotics', 'Gaming', 'Seminar', 'Sports']
+    categories.extend(category for category in event_categories if category not in categories)
     return dict(
         current_user=current_user,
         unread_notifications_count=unread_notifs,
@@ -454,7 +503,8 @@ def event_details(event_id):
         with db.cursor() as cursor:
             cursor.execute("""
                 SELECT e.*, v.name as venue_name, v.building as venue_building, v.capacity as venue_capacity, v.location_details,
-                       c.name as club_name, c.code as club_code, c.faculty_advisor_name,
+                       c.name as club_name, c.code as club_code,
+                       COALESCE((SELECT fm.name FROM club_members fm WHERE fm.club_id = e.club_id AND fm.role = 'faculty' AND fm.status = 'active' ORDER BY fm.id DESC LIMIT 1), c.faculty_advisor_name) as faculty_advisor_name,
                        a.name as admin_creator_name,
                        m.name as member_creator_name, m.role as member_creator_role,
                        (SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.id AND r.status IN ('registered', 'approved', 'attended')) as registered_count,
@@ -548,7 +598,7 @@ def api_calendar_events():
                     'url': url_for('event_details', event_id=ev['id']),
                     'extendedProps': {
                         'venue': ev['venue_name'] or 'Campus',
-                        'club': ev['club_name'] or 'RGCET',
+                        'club': ev['club_name'] or 'Campus Events',
                         'category': ev['category']
                     }
                 })
@@ -610,7 +660,7 @@ def login():
                         SELECT m.*, c.name as club_name, c.code as club_code
                         FROM club_members m
                         JOIN clubs c ON m.club_id = c.id
-                        WHERE m.email = %s AND m.role = %s
+                        WHERE m.email = %s AND m.role = %s AND m.status = 'active'
                     """, (email, club_role))
                     member = cursor.fetchone()
                     
@@ -657,7 +707,12 @@ def register():
     db = get_db_connection()
     try:
         with db.cursor() as cursor:
-            cursor.execute("SELECT id, name, code FROM clubs ORDER BY name ASC")
+            cursor.execute("""
+                SELECT c.id, c.name, c.code,
+                       EXISTS(SELECT 1 FROM club_members m WHERE m.club_id = c.id AND m.role = 'leader' AND m.status = 'active') AS has_leader,
+                       EXISTS(SELECT 1 FROM club_members m WHERE m.club_id = c.id AND m.role = 'faculty' AND m.status = 'active') AS has_faculty
+                FROM clubs c ORDER BY c.name ASC
+            """)
             clubs = cursor.fetchall()
     finally:
         db.close()
@@ -705,30 +760,62 @@ def register():
                     session['department'] = department
                     session['role'] = 'student'
                     
-                    flash('Student registration successful! Welcome to RGCET Event Hub.', 'success')
+                    flash('Student registration successful! Welcome to the Campus Event Hub.', 'success')
                     return redirect(url_for('student_dashboard'))
 
                 elif reg_type == 'club':
                     club_id = int(request.form.get('club_id'))
                     club_role = request.form.get('club_role', 'volunteer')
-
-                    if club_role == 'leader':
-                        cursor.execute("UPDATE club_members SET role = 'ex_leader' WHERE club_id = %s AND role = 'leader'", (club_id,))
-                    
-                    cursor.execute("SELECT id FROM club_members WHERE email = %s", (email,))
-                    if cursor.fetchone():
-                        flash('A club member with that email address already exists.', 'warning')
+                    if club_role not in ('faculty', 'leader', 'coordinator', 'volunteer'):
+                        flash('Select a valid club position.', 'warning')
                         return render_template('auth/register.html', clubs=clubs)
 
-                    member_code = f"RGCET-{club_role[:3].upper()}-{uuid.uuid4().hex[:6].upper()}"
-                    qr_img = generate_member_qr(member_code)
+                    cursor.execute("SELECT id FROM clubs WHERE id = %s", (club_id,))
+                    if not cursor.fetchone():
+                        flash('Select a valid campus club.', 'warning')
+                        return render_template('auth/register.html', clubs=clubs)
+
+                    if club_role in ('leader', 'faculty'):
+                        db.begin()
+                        cursor.execute("SELECT id FROM clubs WHERE id = %s FOR UPDATE", (club_id,))
+                        cursor.fetchone()
+
+                    cursor.execute("SELECT id, club_id, status FROM club_members WHERE email = %s", (email,))
+                    existing_member = cursor.fetchone()
+                    if existing_member and (existing_member['status'] != 'withdrawn' or existing_member['club_id'] != club_id):
+                        flash('An active club membership already uses that email address.', 'warning')
+                        return render_template('auth/register.html', clubs=clubs)
+
+                    if club_role in ('leader', 'faculty'):
+                        cursor.execute("SELECT id FROM club_members WHERE club_id = %s AND role = %s AND status = 'active'", (club_id, club_role))
+                        if cursor.fetchone():
+                            position = 'President' if club_role == 'leader' else 'Faculty Advisor'
+                            flash(f'This club already has an active {position}. That position becomes available after withdrawal.', 'warning')
+                            return render_template('auth/register.html', clubs=clubs)
+
                     hashed_pw = generate_password_hash(password)
 
-                    cursor.execute("""
-                        INSERT INTO club_members (club_id, name, email, phone, department, role, password_hash, member_code, qr_code_image)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (club_id, name, email, phone, department, club_role, hashed_pw, member_code, qr_img))
-                    member_id = cursor.lastrowid
+                    if existing_member:
+                        cursor.execute("""
+                            UPDATE club_members
+                            SET name = %s, phone = %s, department = %s, role = %s, status = 'active',
+                                can_download_attendance = FALSE, password_hash = %s
+                            WHERE id = %s AND status = 'withdrawn'
+                        """, (name, phone, department, club_role, hashed_pw, existing_member['id']))
+                        member_id = existing_member['id']
+                        cursor.execute("SELECT member_code FROM club_members WHERE id = %s", (member_id,))
+                        member_code = cursor.fetchone()['member_code']
+                    else:
+                        member_code = f"MEM-{club_role[:3].upper()}-{uuid.uuid4().hex[:6].upper()}"
+                        qr_img = generate_member_qr(member_code)
+                        cursor.execute("""
+                            INSERT INTO club_members (club_id, name, email, phone, department, role, password_hash, member_code, qr_code_image)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (club_id, name, email, phone, department, club_role, hashed_pw, member_code, qr_img))
+                        member_id = cursor.lastrowid
+
+                    if club_role in ('leader', 'faculty'):
+                        db.commit()
 
                     cursor.execute("SELECT name FROM clubs WHERE id = %s", (club_id,))
                     c_name = cursor.fetchone()['name']
@@ -796,7 +883,7 @@ def register_event(event_id):
                 flash('You have already claimed a pass for this event!', 'info')
                 return redirect(url_for('event_details', event_id=event_id))
                 
-            ticket_code = f"RGCET-{uuid.uuid4().hex[:6].upper()}"
+            ticket_code = f"PASS-{uuid.uuid4().hex[:6].upper()}"
             qr_filename = generate_ticket_qr(ticket_code)
             
             if event['fee'] == 0:
@@ -882,7 +969,8 @@ def view_certificate(registration_id):
         with db.cursor() as cursor:
             cursor.execute("""
                 SELECT r.*, e.title as event_title, e.category as event_category, e.event_date,
-                       c.name as club_name, c.faculty_advisor_name,
+                       c.name as club_name,
+                       COALESCE((SELECT fm.name FROM club_members fm WHERE fm.club_id = e.club_id AND fm.role = 'faculty' AND fm.status = 'active' ORDER BY fm.id DESC LIMIT 1), c.faculty_advisor_name) as faculty_advisor_name,
                        s.name as student_name, s.roll_number, s.department
                 FROM registrations r
                 JOIN events e ON r.event_id = e.id
@@ -1125,7 +1213,7 @@ def club_dashboard():
             total_attended = cursor.fetchone()['count']
 
             # Club members
-            cursor.execute("SELECT * FROM club_members WHERE club_id = %s ORDER BY FIELD(role, 'faculty', 'leader', 'coordinator', 'volunteer'), name ASC", (club_id,))
+            cursor.execute("SELECT * FROM club_members WHERE club_id = %s AND status = 'active' ORDER BY FIELD(role, 'faculty', 'leader', 'coordinator', 'volunteer'), name ASC", (club_id,))
             members = cursor.fetchall()
 
             # Recent club events
@@ -1174,6 +1262,7 @@ def club_dashboard():
 @club_required
 def club_events():
     club_id = session['club_id']
+    member = get_active_club_member()
     db = get_db_connection()
     try:
         with db.cursor() as cursor:
@@ -1190,7 +1279,8 @@ def club_events():
             events = cursor.fetchall()
     finally:
         db.close()
-    return render_template('club/events.html', events=events)
+    can_export_attendance = member['role'] in ('faculty', 'leader') or (member['role'] == 'coordinator' and member['can_download_attendance'])
+    return render_template('club/events.html', events=events, can_export_attendance=can_export_attendance)
 
 @app.route('/club/events/create', methods=['GET', 'POST'])
 @club_leader_or_faculty_required
@@ -1209,18 +1299,31 @@ def club_create_event():
             if request.method == 'POST':
                 title = request.form.get('title', '').strip()
                 category = request.form.get('category', '').strip()
+                if category == '__custom__':
+                    category = request.form.get('custom_category', '').strip()
+                if not category or len(category) > 50:
+                    flash('Enter an event category of 1 to 50 characters.', 'warning')
+                    return redirect(url_for('club_create_event'))
                 description = request.form.get('description', '').strip()
                 venue_id = int(request.form.get('venue_id'))
                 event_date = request.form.get('event_date')
                 start_time = request.form.get('start_time')
                 end_time = request.form.get('end_time')
+                if end_time <= start_time:
+                    flash('Event end time must be later than its start time.', 'warning')
+                    return redirect(url_for('club_create_event'))
+                conflict = find_venue_conflict(db, cursor, venue_id, event_date, start_time, end_time)
+                if conflict:
+                    db.rollback()
+                    flash(f'This venue is already reserved for "{conflict["title"]}" during that time. Choose another time or venue.', 'warning')
+                    return redirect(url_for('club_create_event'))
                 capacity = int(request.form.get('capacity', 50))
                 fee = float(request.form.get('fee', 0.00))
                 upi_id = request.form.get('upi_id', '').strip()
                 attendance_incharge_id = request.form.get('attendance_incharge_member_id') or None
                 if attendance_incharge_id:
                     attendance_incharge_id = int(attendance_incharge_id)
-                    cursor.execute("SELECT id FROM club_members WHERE id = %s AND club_id = %s AND role IN ('coordinator', 'volunteer')", (attendance_incharge_id, club_id))
+                    cursor.execute("SELECT id FROM club_members WHERE id = %s AND club_id = %s AND status = 'active' AND role IN ('coordinator', 'volunteer')", (attendance_incharge_id, club_id))
                     if not cursor.fetchone():
                         flash('Select a coordinator or volunteer from your club as attendance incharge.', 'warning')
                         attendance_incharge_id = None
@@ -1256,13 +1359,14 @@ def club_create_event():
                     start_time, end_time, capacity, fee, banner_filename,
                     payment_qr_filename, upi_id, club_id, member_id, attendance_incharge_id, initial_status
                 ))
+                db.commit()
                 
                 flash(flash_msg, 'success')
                 return redirect(url_for('club_events'))
 
             cursor.execute("SELECT * FROM venues ORDER BY name ASC")
             venues = cursor.fetchall()
-            cursor.execute("SELECT id, name, role FROM club_members WHERE club_id = %s AND role IN ('coordinator', 'volunteer') ORDER BY name", (club_id,))
+            cursor.execute("SELECT id, name, role FROM club_members WHERE club_id = %s AND status = 'active' AND role IN ('coordinator', 'volunteer') ORDER BY name", (club_id,))
             attendance_members = cursor.fetchall()
     finally:
         db.close()
@@ -1360,6 +1464,7 @@ def club_request_deletion(event_id):
 def club_attendance_desk(event_id):
     """QR-based attendance desk for the event."""
     club_id = session['club_id']
+    member = get_active_club_member()
     db = get_db_connection()
     try:
         with db.cursor() as cursor:
@@ -1376,20 +1481,31 @@ def club_attendance_desk(event_id):
                 flash('Event not found.', 'danger')
                 return redirect(url_for('club_events'))
 
-            if event['club_id'] != club_id or event.get('attendance_incharge_member_id') != session['user_id']:
-                flash('Only the assigned attendance incharge can open this scanner.', 'danger')
+            if event['club_id'] != club_id:
+                flash('This event belongs to another club.', 'danger')
                 return redirect(url_for('club_events'))
 
-            cursor.execute("""
-                SELECT r.*, s.name as student_name, s.roll_number, s.department, s.year_of_study, s.email, s.phone
-                FROM registrations r
-                JOIN students s ON r.student_id = s.id
-                WHERE r.event_id = %s
-                ORDER BY r.status DESC, s.name ASC
-            """, (event_id,))
-            participants = cursor.fetchall()
-            
-            attended_count = sum(1 for p in participants if p['status'] == 'attended')
+            can_view_attendance = member['role'] in ('faculty', 'leader') or (member['role'] == 'coordinator' and member['can_download_attendance'])
+            if can_view_attendance:
+                cursor.execute("""
+                    SELECT r.*, s.name as student_name, s.roll_number, s.department, s.year_of_study, s.email, s.phone
+                    FROM registrations r
+                    JOIN students s ON r.student_id = s.id
+                    WHERE r.event_id = %s
+                    ORDER BY r.status DESC, s.name ASC
+                """, (event_id,))
+                participants = cursor.fetchall()
+                total_participants = len(participants)
+                attended_count = sum(1 for p in participants if p['status'] == 'attended')
+            else:
+                cursor.execute("""
+                    SELECT COUNT(*) as total, COALESCE(SUM(status = 'attended'), 0) as attended
+                    FROM registrations WHERE event_id = %s
+                """, (event_id,))
+                attendance_totals = cursor.fetchone()
+                participants = []
+                total_participants = attendance_totals['total']
+                attended_count = attendance_totals['attended']
     finally:
         db.close()
         
@@ -1397,7 +1513,10 @@ def club_attendance_desk(event_id):
         'club/attendance.html',
         event=event,
         participants=participants,
-        attended_count=attended_count
+        total_participants=total_participants,
+        attended_count=attended_count,
+        can_view_attendance=can_view_attendance,
+        can_export_attendance=member['role'] in ('faculty', 'leader') or (member['role'] == 'coordinator' and member['can_download_attendance'])
     )
 
 @app.route('/api/club/scan-ticket', methods=['POST'])
@@ -1414,9 +1533,9 @@ def api_club_scan_ticket():
     db = get_db_connection()
     try:
         with db.cursor() as cursor:
-            cursor.execute("SELECT id FROM events WHERE id = %s AND attendance_incharge_member_id = %s AND club_id = %s", (event_id, session['user_id'], session['club_id']))
+            cursor.execute("SELECT id FROM events WHERE id = %s AND club_id = %s", (event_id, session['club_id']))
             if not cursor.fetchone():
-                return jsonify({'success': False, 'message': 'You are not assigned as attendance incharge for this event.'}), 403
+                return jsonify({'success': False, 'message': 'This event does not belong to your club.'}), 403
 
             cursor.execute("""
                 SELECT r.*, s.name as student_name, s.roll_number, s.department, s.email,
@@ -1496,8 +1615,10 @@ def club_export_attendance(event_id):
             if not event:
                 flash('Event not found.', 'danger')
                 return redirect(url_for('club_events'))
-            if event['club_id'] != session['club_id'] or session.get('club_role') not in ('faculty', 'leader'):
-                flash('Only the club faculty or leader can export this attendance.', 'danger')
+            member = get_active_club_member()
+            can_export = member and (member['role'] in ('faculty', 'leader') or (member['role'] == 'coordinator' and member['can_download_attendance']))
+            if event['club_id'] != session['club_id'] or not can_export:
+                flash('Attendance downloads are limited to club faculty, president, and approved coordinators.', 'danger')
                 return redirect(url_for('club_events'))
 
             cursor.execute("""
@@ -1511,7 +1632,7 @@ def club_export_attendance(event_id):
             
             excel_stream = build_attendance_excel(event, participants)
             safe_title = "".join(c for c in event['title'] if c.isalnum() or c in (' ', '_', '-')).rstrip()
-            filename = f"RGCET_Attendance_{safe_title}_{datetime.now().strftime('%Y%m%d')}.xlsx"
+            filename = f"Attendance_{safe_title}_{datetime.now().strftime('%Y%m%d')}.xlsx"
             
             return send_file(
                 excel_stream,
@@ -1533,13 +1654,65 @@ def club_members():
                 SELECT m.*, c.name as club_name
                 FROM club_members m
                 JOIN clubs c ON m.club_id = c.id
-                WHERE m.club_id = %s
+                WHERE m.club_id = %s AND m.status = 'active'
                 ORDER BY FIELD(m.role, 'faculty', 'leader', 'coordinator', 'volunteer'), m.name ASC
             """, (club_id,))
             members = cursor.fetchall()
     finally:
         db.close()
     return render_template('club/members.html', members=members)
+
+@app.route('/club/members/withdraw', methods=['POST'])
+@club_required
+def club_withdraw_membership():
+    db = get_db_connection()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("UPDATE club_members SET status = 'withdrawn', can_download_attendance = FALSE WHERE id = %s AND club_id = %s AND status = 'active'", (session['user_id'], session['club_id']))
+    finally:
+        db.close()
+    session.clear()
+    flash('You have withdrawn from the club. Your club access has been disabled.', 'info')
+    return redirect(url_for('index'))
+
+@app.route('/club/members/<int:member_id>/withdraw', methods=['POST'])
+@club_required
+def club_remove_member(member_id):
+    leader = get_active_club_member()
+    if not leader or leader['role'] != 'leader':
+        flash('Only the club president can remove coordinators or volunteers.', 'danger')
+        return redirect(url_for('club_members'))
+    db = get_db_connection()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("UPDATE club_members SET status = 'withdrawn', can_download_attendance = FALSE WHERE id = %s AND club_id = %s AND role IN ('coordinator', 'volunteer') AND status = 'active'", (member_id, session['club_id']))
+            if cursor.rowcount:
+                flash('Club member withdrawn successfully.', 'success')
+            else:
+                flash('Only an active coordinator or volunteer from this club can be removed.', 'warning')
+    finally:
+        db.close()
+    return redirect(url_for('club_members'))
+
+@app.route('/club/members/<int:member_id>/attendance-download', methods=['POST'])
+@club_required
+def club_set_attendance_download(member_id):
+    leader = get_active_club_member()
+    if not leader or leader['role'] != 'leader':
+        flash('Only the club president can grant coordinator attendance downloads.', 'danger')
+        return redirect(url_for('club_members'))
+    enabled = request.form.get('enabled') == '1'
+    db = get_db_connection()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("UPDATE club_members SET can_download_attendance = %s WHERE id = %s AND club_id = %s AND role = 'coordinator' AND status = 'active'", (enabled, member_id, session['club_id']))
+            if cursor.rowcount:
+                flash('Coordinator attendance download permission updated.', 'success')
+            else:
+                flash('Select an active coordinator from your club.', 'warning')
+    finally:
+        db.close()
+    return redirect(url_for('club_members'))
 
 # ------------------------------------------------------------------------------
 # CENTRAL ADMIN PORTAL
@@ -1676,6 +1849,11 @@ def admin_create_event():
             if request.method == 'POST':
                 title = request.form.get('title', '').strip()
                 category = request.form.get('category', '').strip()
+                if category == '__custom__':
+                    category = request.form.get('custom_category', '').strip()
+                if not category or len(category) > 50:
+                    flash('Enter an event category of 1 to 50 characters.', 'warning')
+                    return redirect(url_for('admin_create_event'))
                 description = request.form.get('description', '').strip()
                 venue_id = int(request.form.get('venue_id'))
                 club_id = request.form.get('club_id')
@@ -1683,6 +1861,14 @@ def admin_create_event():
                 event_date = request.form.get('event_date')
                 start_time = request.form.get('start_time')
                 end_time = request.form.get('end_time')
+                if end_time <= start_time:
+                    flash('Event end time must be later than its start time.', 'warning')
+                    return redirect(url_for('admin_create_event'))
+                conflict = find_venue_conflict(db, cursor, venue_id, event_date, start_time, end_time)
+                if conflict:
+                    db.rollback()
+                    flash(f'This venue is already reserved for "{conflict["title"]}" during that time. Choose another time or venue.', 'warning')
+                    return redirect(url_for('admin_create_event'))
                 capacity = int(request.form.get('capacity', 50))
                 fee = float(request.form.get('fee', 0.00))
                 upi_id = request.form.get('upi_id', '').strip()
@@ -1711,6 +1897,7 @@ def admin_create_event():
                     start_time, end_time, capacity, fee, banner_filename,
                     payment_qr_filename, upi_id, club_id, session['user_id'], datetime.now()
                 ))
+                db.commit()
                 
                 flash(f'Event "{title}" published directly to Home Page and Calendar!', 'success')
                 return redirect(url_for('admin_events'))
@@ -1739,6 +1926,11 @@ def admin_edit_event(event_id):
             if request.method == 'POST':
                 title = request.form.get('title', '').strip()
                 category = request.form.get('category', '').strip()
+                if category == '__custom__':
+                    category = request.form.get('custom_category', '').strip()
+                if not category or len(category) > 50:
+                    flash('Enter an event category of 1 to 50 characters.', 'warning')
+                    return redirect(url_for('admin_edit_event', event_id=event_id))
                 description = request.form.get('description', '').strip()
                 venue_id = int(request.form.get('venue_id'))
                 club_id = request.form.get('club_id')
@@ -1746,10 +1938,20 @@ def admin_edit_event(event_id):
                 event_date = request.form.get('event_date')
                 start_time = request.form.get('start_time')
                 end_time = request.form.get('end_time')
+                if end_time <= start_time:
+                    flash('Event end time must be later than its start time.', 'warning')
+                    return redirect(url_for('admin_edit_event', event_id=event_id))
                 capacity = int(request.form.get('capacity', 50))
                 fee = float(request.form.get('fee', 0.00))
                 upi_id = request.form.get('upi_id', '').strip()
                 status = request.form.get('status', 'upcoming')
+
+                if status not in ('cancelled', 'rejected'):
+                    conflict = find_venue_conflict(db, cursor, venue_id, event_date, start_time, end_time, event_id)
+                    if conflict:
+                        db.rollback()
+                        flash(f'This venue is already reserved for "{conflict["title"]}" during that time. Choose another time or venue.', 'warning')
+                        return redirect(url_for('admin_edit_event', event_id=event_id))
                 
                 banner_filename = event['banner_image']
                 if 'banner' in request.files:
@@ -1774,6 +1976,8 @@ def admin_edit_event(event_id):
                     event_date, start_time, end_time, capacity,
                     fee, banner_filename, payment_qr_filename, upi_id, status, event_id
                 ))
+                if status not in ('cancelled', 'rejected'):
+                    db.commit()
                 
                 flash(f'Event "{title}" updated successfully!', 'success')
                 return redirect(url_for('admin_events'))
@@ -2028,7 +2232,7 @@ def admin_export_attendance(event_id):
             
             excel_stream = build_attendance_excel(event, participants)
             safe_title = "".join(c for c in event['title'] if c.isalnum() or c in (' ', '_', '-')).rstrip()
-            filename = f"RGCET_Attendance_{safe_title}_{datetime.now().strftime('%Y%m%d')}.xlsx"
+            filename = f"Attendance_{safe_title}_{datetime.now().strftime('%Y%m%d')}.xlsx"
             
             return send_file(
                 excel_stream,

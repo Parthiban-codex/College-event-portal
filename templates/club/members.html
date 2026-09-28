@@ -17,9 +17,14 @@
         </p>
     </div>
 
-    <a href="{{ url_for('club_dashboard') }}" class="tactile-btn">
-        <span>🔙</span> Club Desk
-    </a>
+    <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+        <form method="POST" action="{{ url_for('club_withdraw_membership') }}" onsubmit="return confirm('Withdraw from this club and end your club access?');">
+            <button type="submit" class="tactile-btn tactile-btn-danger">Withdraw from Club</button>
+        </form>
+        <a href="{{ url_for('club_dashboard') }}" class="tactile-btn">
+            <span>🔙</span> Club Desk
+        </a>
+    </div>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
@@ -50,7 +55,7 @@
                 <div style="font-size: 0.8rem; color: var(--ink-pencil);">
                     <div>📧 {{ m.email }}</div>
                     <div>📞 {{ m.phone }}</div>
-                    <small style="color: var(--rgcet-royal); font-weight: 700; margin-top: 4px; display: block;">RGCET Authorized</small>
+                    <small style="color: var(--rgcet-royal); font-weight: 700; margin-top: 4px; display: block;">Active Club Member</small>
                 </div>
 
                 <!-- Member QR Code Image -->
@@ -58,6 +63,22 @@
                     <img src="{{ url_for('static', filename='uploads/members/' + m.qr_code_image) }}" alt="{{ m.member_code }}" style="width: 68px; height: 68px; border: 1px solid var(--card-border); border-radius: 6px; padding: 2px; background: white;" title="Unique Member ID QR">
                 {% endif %}
             </div>
+
+            {% if session.get('club_role') == 'leader' and m.id != session.get('user_id') and m.role in ['coordinator', 'volunteer'] %}
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-top: 1px dashed var(--card-border); padding-top: 0.8rem; margin-top: 0.8rem;">
+                    {% if m.role == 'coordinator' %}
+                        <form method="POST" action="{{ url_for('club_set_attendance_download', member_id=m.id) }}">
+                            <input type="hidden" name="enabled" value="{{ 0 if m.can_download_attendance else 1 }}">
+                            <button type="submit" class="tactile-btn" style="font-size: 0.76rem; padding: 0.35rem 0.55rem;">
+                                {{ 'Revoke attendance downloads' if m.can_download_attendance else 'Allow attendance downloads' }}
+                            </button>
+                        </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('club_remove_member', member_id=m.id) }}" onsubmit="return confirm('Withdraw this member from the club?');">
+                        <button type="submit" class="tactile-btn tactile-btn-danger" style="font-size: 0.76rem; padding: 0.35rem 0.55rem;">Remove from Club</button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     {% endfor %}
 </div>

@@ -26,13 +26,13 @@
                 
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label class="form-label">Event Title <span style="color: red;">*</span></label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g. HackRGCET 2026: 24-Hour AI & Web3 National Hackathon" value="{{ event.title if event else '' }}" required>
+                    <input type="text" name="title" class="form-input" placeholder="e.g. 24-Hour AI & Web3 Hackathon" value="{{ event.title if event else '' }}" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Host Club / Department Association</label>
                     <select name="club_id" class="form-select">
-                        <option value="">RGCET Central Administration Desk</option>
+                        <option value="">Central Administration Desk</option>
                         {% for c in clubs %}
                             <option value="{{ c.id }}" {% if event and event.club_id == c.id %}selected{% endif %}>{{ c.name }} ({{ c.code }})</option>
                         {% endfor %}
@@ -45,7 +45,13 @@
                         {% for cat in categories %}
                             <option value="{{ cat }}" {% if event and event.category == cat %}selected{% endif %}>{{ cat }}</option>
                         {% endfor %}
+                        <option value="__custom__">Other (specify)</option>
                     </select>
+                </div>
+
+                <div class="form-group" id="custom-category-group" style="display: none;">
+                    <label class="form-label">Specific Category <span style="color: red;">*</span></label>
+                    <input type="text" name="custom_category" id="custom-category" class="form-input" maxlength="50" placeholder="Enter event category">
                 </div>
 
                 <div class="form-group">
@@ -88,7 +94,7 @@
 
                 <div class="form-group" id="admin-upi-group" style="{% if not event or event.fee == 0 %}display: none;{% endif %}">
                     <label class="form-label">UPI ID for Ticket Payment Collection</label>
-                    <input type="text" name="upi_id" class="form-input" placeholder="e.g. rgcet@upi" value="{{ event.upi_id if event else '' }}">
+                    <input type="text" name="upi_id" class="form-input" placeholder="e.g. events@upi" value="{{ event.upi_id if event else '' }}">
                 </div>
 
                 <div class="form-group">
@@ -129,5 +135,13 @@ function toggleUpi() {
     const fee = parseFloat(document.getElementById('admin_event_fee').value) || 0;
     document.getElementById('admin-upi-group').style.display = fee > 0 ? 'block' : 'none';
 }
+
+const categorySelect = document.querySelector('select[name="category"]');
+const customCategory = document.getElementById('custom-category');
+categorySelect.addEventListener('change', () => {
+    const isOther = categorySelect.value === '__custom__';
+    document.getElementById('custom-category-group').style.display = isOther ? 'block' : 'none';
+    customCategory.required = isOther;
+});
 </script>
 {% endblock %}

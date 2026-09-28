@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Central Administration Desk | RGCET Event Hub{% endblock %}
+{% block title %}Central Administration Desk | Campus Event Hub{% endblock %}
 
 {% block content %}
 <!-- Header Bar -->
@@ -8,7 +8,7 @@
     <div>
         <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
             <span class="morphic-badge morphic-badge-blue">Central Administration</span>
-            <span class="morphic-badge morphic-badge-emerald">RGCET Administration</span>
+            <span class="morphic-badge morphic-badge-emerald">Administration</span>
         </div>
         <h1 style="font-family: var(--font-heading); font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">
             College Executive Desk
@@ -37,6 +37,12 @@
         </a>
         <a href="{{ url_for('admin_announcements') }}" class="morphic-btn">
             <span>📢</span> Broadcast Notice
+        </a>
+        <a href="{{ url_for('profile_settings') }}" class="morphic-btn">
+            <span>⚙️</span> Profile
+        </a>
+        <a href="{{ url_for('logout') }}" class="morphic-btn morphic-btn-danger">
+            <span>🚪</span> Logout
         </a>
     </div>
 </div>

@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RGCET Event Hub | Rajiv Gandhi College of Engineering & Technology{% endblock %}</title>
+    <title>{% block title %}Campus Event Hub{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('rgcet_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/rgcet_logo.png') }}">
     
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <header class="morphic-navbar">
         <a href="{{ url_for('index') }}" class="nav-brand-rgcet">
-            <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET Emblem" class="rgcet-logo-img">
             <div class="brand-college-text">
-                <span class="brand-name-main">RAJIV GANDHI</span>
-                <span class="brand-name-sub">College of Engineering & Technology • Puducherry</span>
+                <span class="brand-name-main">EVENT HUB</span>
+                <span class="brand-name-sub">Campus calendar & activities</span>
             </div>
         </a>
 
-        <nav>
+        <nav class="nav-shell">
             <ul class="nav-links">
                 <li>
                     <a href="{{ url_for('index') }}" class="nav-tab-btn {% if request.endpoint == 'index' %}active{% endif %}">
@@ -116,9 +120,8 @@
             </ul>
         </nav>
 
-        <div style="display: flex; align-items: center; gap: 0.8rem;">
-         
-            <button id="themeToggleBtn" class="morphic-theme-toggle" type="button" title="Toggle Minimalist Day / Night Mode">
+        <div class="nav-user-actions">
+            <button id="themeToggleBtn" class="morphic-theme-toggle" type="button" title="Switch to dark mode" aria-label="Switch to dark mode" aria-pressed="false">
                 <span class="toggle-indicator-dot"></span>
                 <span id="themeToggleLabel">Day Frost</span>
             </button>
@@ -126,7 +129,7 @@
             {% if session.get('user_id') %}
                 <div class="user-desk-badge">
                     <span class="user-desk-avatar">{{ session.get('name', 'U')[0] }}</span>
-                    <span>{{ session.get('name') }}</span>
+                    <span class="user-name-text">{{ session.get('name') }}</span>
                     
                     {% if session.get('role') == 'admin' %}
                         <span class="morphic-badge morphic-badge-blue" style="font-size: 0.72rem; padding: 2px 7px;">Admin</span>
@@ -164,13 +167,7 @@
 
         
         <footer style="text-align: center; margin-top: 2.2rem; color: var(--text-secondary); font-size: 0.85rem;">
-            <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
-                <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET" style="width: 22px; height: 22px; object-fit: contain;">
-                <p><strong>Rajiv Gandhi College of Engineering and Technology (RGCET)</strong> • Puducherry</p>
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.02em;">
-                Autonomous Institution • Affiliated to Pondicherry University • Accredited by NAAC & NBA
-            </p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Campus events • Clubs • Activities</p>
         </footer>
     </main>
     <script>
@@ -195,8 +192,12 @@
 
         function updateLabel(theme) {
             if (themeLabel) {
-                themeLabel.textContent = theme === 'dark' ? 'Obsidian Glow' : 'Day Frost';
+                themeLabel.textContent = theme === 'dark' ? 'Midnight Blue' : 'Day Frost';
             }
+            const isDark = theme === 'dark';
+            toggleBtn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+            toggleBtn.setAttribute('aria-label', toggleBtn.title);
+            toggleBtn.setAttribute('aria-pressed', String(isDark));
         }
     })();
     </script>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Register | RGCET Event Hub{% endblock %}
+{% block title %}Register | Campus Event Hub{% endblock %}
 
 {% block content %}
 <div style="max-width: 680px; margin: 1.5rem auto;">
@@ -8,10 +8,9 @@
         
         <div style="text-align: center; margin-bottom: 2rem;">
             <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem;">
-                <img src="{{ url_for('static', filename='images/rgcet_logo.png') }}" alt="RGCET" style="width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.1));">
             </div>
             <h1 style="font-family: var(--font-heading); font-size: 1.65rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.015em;">
-                RGCET Portal Registration
+                Portal Registration
             </h1>
             <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
                 Register as an enrolled student or request credentials for an authorized campus club
@@ -46,7 +45,7 @@
 
                 <div class="form-group">
                     <label class="form-label">College Email Address <span style="color: var(--status-rose-text);">*</span></label>
-                    <input type="email" name="email" class="morphic-input" placeholder="e.g. rahul@rgcet.edu" required>
+                    <input type="email" name="email" class="morphic-input" placeholder="e.g. rahul@example.edu" required>
                 </div>
 
                 <div class="form-group">
@@ -94,7 +93,7 @@
                     <select name="club_id" id="reg-club-id" class="morphic-input">
                         <option value="" disabled selected>Select Club</option>
                         {% for club in clubs %}
-                            <option value="{{ club.id }}">{{ club.name }} ({{ club.code }})</option>
+                            <option value="{{ club.id }}" data-has-leader="{{ 1 if club.has_leader else 0 }}" data-has-faculty="{{ 1 if club.has_faculty else 0 }}">{{ club.name }} ({{ club.code }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -104,8 +103,8 @@
                     <select name="club_role" id="reg-club-role" class="morphic-input">
                         <option value="volunteer" selected>Volunteer (Member Assistance)</option>
                         <option value="coordinator">Coordinator (Attendance & Logistics)</option>
-                        <option value="leader">Leader / President (Create & Propose Events)</option>
-                        <option value="faculty">Faculty Advisor (Review & Forward to Admin)</option>
+                        <option value="leader" data-exclusive-role="leader">Leader / President (Create & Propose Events)</option>
+                        <option value="faculty" data-exclusive-role="faculty">Faculty Advisor (Review & Forward to Admin)</option>
                     </select>
                 </div>
 
@@ -143,6 +142,27 @@ function toggleRegForm() {
     document.getElementById('club-role-group').style.display = isClub ? 'block' : 'none';
     const clubSelect = document.getElementById('reg-club-id');
     if (clubSelect) clubSelect.required = isClub;
+    updateClubRoles();
 }
+
+function updateClubRoles() {
+    const clubSelect = document.getElementById('reg-club-id');
+    const roleSelect = document.getElementById('reg-club-role');
+    if (!clubSelect || !roleSelect) return;
+    const selectedClub = clubSelect.options[clubSelect.selectedIndex];
+    const exclusiveOptions = roleSelect.querySelectorAll('[data-exclusive-role]');
+    let selectedRoleDisabled = false;
+    exclusiveOptions.forEach(option => {
+        const roleTaken = selectedClub && (option.dataset.exclusiveRole === 'leader'
+            ? selectedClub.dataset.hasLeader === '1'
+            : selectedClub.dataset.hasFaculty === '1');
+        option.disabled = Boolean(roleTaken);
+        if (option.selected && option.disabled) selectedRoleDisabled = true;
+    });
+    if (selectedRoleDisabled) roleSelect.value = 'volunteer';
+}
+
+document.getElementById('reg-club-id').addEventListener('change', updateClubRoles);
+toggleRegForm();
 </script>
 {% endblock %}

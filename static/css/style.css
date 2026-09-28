@@ -1,12 +1,12 @@
 
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* --- DESIGN TOKENS: LIGHT THEME (DAY FROST) --- */
 :root {
     /* Typography */
-    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-heading: 'Outfit', sans-serif;
+    --font-main: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-heading: 'Space Grotesk', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
     /* RGCET Brand Colors */
@@ -104,13 +104,14 @@
 
 /* --- DESIGN TOKENS: DARK THEME (OBSIDIAN FROST) --- */
 [data-theme="dark"] {
-    --ambient-bg: #0B0F19;
-    --ambient-gradient: radial-gradient(circle at 50% 0%, #171E2E 0%, #0F1420 50%, #080B12 100%);
+    color-scheme: dark;
+    --ambient-bg: #071426;
+    --ambient-gradient: radial-gradient(ellipse at 50% -12%, #17345B 0%, #0B1D36 43%, #061020 100%);
 
-    --glass-surface: rgba(18, 24, 38, 0.75);
-    --glass-surface-hover: rgba(26, 34, 52, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-subtle: rgba(255, 255, 255, 0.12);
+    --glass-surface: rgba(10, 26, 49, 0.84);
+    --glass-surface-hover: rgba(17, 40, 72, 0.94);
+    --glass-border: rgba(139, 190, 255, 0.14);
+    --glass-border-subtle: rgba(190, 220, 255, 0.12);
 
     --morphic-shadow-card: 
         0 16px 36px -12px rgba(0, 0, 0, 0.6),
@@ -119,21 +120,21 @@
 
     --morphic-shadow-hover: 
         0 24px 48px -12px rgba(0, 0, 0, 0.8),
-        0 0 20px rgba(59, 130, 246, 0.2),
-        0 0 0 1px rgba(96, 165, 250, 0.3) inset;
+        0 0 24px rgba(58, 145, 255, 0.22),
+        0 0 0 1px rgba(130, 190, 255, 0.28) inset;
 
     --morphic-shadow-inset: 
         inset 0 2px 5px rgba(0, 0, 0, 0.5),
         inset 0 1px 2px rgba(0, 0, 0, 0.4);
 
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    --text-inverse: #0F172A;
+    --text-primary: #EDF5FF;
+    --text-secondary: #AFC1D8;
+    --text-muted: #7890AE;
+    --text-inverse: #061020;
 
-    --rgcet-navy: #93C5FD;
-    --rgcet-royal: #3B82F6;
-    --rgcet-royal-glow: rgba(59, 130, 246, 0.35);
+    --rgcet-navy: #A9CEFF;
+    --rgcet-royal: #64AEFF;
+    --rgcet-royal-glow: rgba(77, 157, 255, 0.32);
 
     --status-emerald-bg: rgba(16, 185, 129, 0.15);
     --status-emerald-text: #34D399;
@@ -155,9 +156,9 @@
     --status-purple-text: #A78BFA;
     --status-purple-border: rgba(139, 92, 246, 0.3);
 
-    --control-bg: rgba(15, 23, 42, 0.7);
-    --control-border: rgba(255, 255, 255, 0.12);
-    --control-border-focus: #3B82F6;
+    --control-bg: rgba(5, 18, 36, 0.88);
+    --control-border: rgba(155, 197, 247, 0.2);
+    --control-border-focus: #64AEFF;
 
     /* Legacy Fallbacks */
     --paper-sheet-bg: var(--glass-surface);
@@ -169,7 +170,7 @@
     --ink-pencil: var(--text-secondary);
     --ink-faint: var(--text-muted);
     --ink-pen-blue: var(--rgcet-royal);
-    --btn-primary-bg: #3B82F6;
+    --btn-primary-bg: #347FE0;
     --btn-primary-text: #FFFFFF;
     --btn-primary-hover: #2563EB;
     --paper-sheet-border: var(--glass-border);
@@ -392,12 +393,17 @@ button, input, select, textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 2.4rem;
-    background: var(--glass-surface);
+    gap: 1rem;
+    padding: 0.8rem 2.1rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(239,246,255,0.92));
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--glass-border);
-    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(37, 99, 235, 0.18);
+    box-shadow: 0 10px 35px -18px rgba(30, 58, 138, 0.32);
+}
+[data-theme="dark"] .morphic-navbar, [data-theme="dark"] .desk-ruler-nav {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9));
+    border-bottom-color: rgba(96, 165, 250, 0.2);
 }
 
 .nav-brand-rgcet {
@@ -438,24 +444,38 @@ button, input, select, textarea {
     letter-spacing: 0.01em;
 }
 
+.nav-shell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
     list-style: none;
+    padding: 0.4rem;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .nav-tab-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    padding: 0.45rem 0.95rem;
+    padding: 0.48rem 0.9rem;
     border-radius: var(--radius-full);
-    font-size: 0.86rem;
-    font-weight: 600;
+    font-size: 0.84rem;
+    font-weight: 700;
     color: var(--text-secondary);
     border: 1px solid transparent;
     transition: all 0.18s ease;
+    letter-spacing: 0.01em;
 }
 .nav-tab-btn:hover {
     background: rgba(37, 99, 235, 0.08);
@@ -503,44 +523,70 @@ button, input, select, textarea {
 }
 
 /* User Account Badge */
+.nav-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
 .user-desk-badge {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background: var(--glass-surface);
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(239,246,255,0.72));
     backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    padding: 0.35rem 0.85rem;
+    border: 1px solid rgba(59, 130, 246, 0.18);
+    padding: 0.35rem 0.75rem 0.35rem 0.45rem;
     border-radius: var(--radius-full);
     font-size: 0.85rem;
-    font-weight: 600;
-    box-shadow: var(--morphic-shadow-card);
+    font-weight: 700;
+    box-shadow: 0 6px 18px -12px rgba(30, 58, 138, 0.35);
+}
+[data-theme="dark"] .user-desk-badge {
+    background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.75));
+    border-color: rgba(96,165,250,0.2);
 }
 
-.logout-button {
-    color: var(--status-rose-text);
-    border: 1px solid var(--status-rose-border);
-    border-radius: var(--radius-xs);
-    padding: 0.35rem 0.65rem;
-    font-size: 0.8rem;
+.user-name-text {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.logout-button, .profile-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    border-radius: 0.8rem;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
     font-weight: 700;
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
 .profile-button {
     color: var(--rgcet-royal);
-    border: 1px solid var(--status-blue-border);
-    border-radius: var(--radius-xs);
-    padding: 0.35rem 0.65rem;
-    font-size: 0.8rem;
-    font-weight: 700;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.logout-button {
+    color: var(--status-rose-text);
+    border: 1px solid rgba(225, 29, 72, 0.25);
+    background: rgba(225, 29, 72, 0.07);
 }
 
 .profile-button:hover {
-    background: var(--status-blue-bg);
+    background: rgba(59, 130, 246, 0.14);
+    transform: translateY(-1px);
 }
 
 .logout-button:hover {
-    background: var(--status-rose-bg);
+    background: rgba(225, 29, 72, 0.12);
+    transform: translateY(-1px);
 }
 
 .simple-home-header, .simple-section {
@@ -1396,5 +1442,237 @@ button, input, select, textarea {
     }
     .events-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Floating navigation dock and page motion */
+.morphic-navbar {
+    position: relative;
+    top: auto;
+    width: min(100% - 2.4rem, 1360px);
+    margin: 1rem auto 0;
+    padding: 0.35rem 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.morphic-navbar .nav-shell {
+    position: fixed;
+    z-index: 1100;
+    left: 50%;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: max-content;
+    max-width: min(1040px, calc(100vw - 2rem));
+    padding: 0;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    filter: drop-shadow(0 18px 38px rgba(3, 14, 31, 0.3));
+}
+
+.morphic-navbar .nav-links {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    padding: 0.48rem;
+    gap: 0.25rem;
+    border-radius: 999px;
+    background: rgba(246, 250, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow: 0 12px 34px rgba(12, 37, 72, 0.16), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+.morphic-navbar .nav-links::-webkit-scrollbar {
+    display: none;
+}
+
+.morphic-navbar .nav-tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 0.62rem 0.9rem;
+    color: #42536A;
+    font-size: 0.81rem;
+}
+
+.morphic-navbar .nav-tab-btn.active {
+    color: #F8FBFF !important;
+    background: linear-gradient(135deg, #245DA3, #367FC8);
+    box-shadow: 0 5px 14px rgba(30, 91, 157, 0.28), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+}
+
+[data-theme="dark"] .morphic-navbar .nav-links {
+    background: rgba(7, 23, 44, 0.82);
+    border-color: rgba(150, 200, 255, 0.2);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+[data-theme="dark"] body {
+    background-color: var(--ambient-bg);
+}
+
+[data-theme="dark"] .morphic-navbar .nav-tab-btn {
+    color: #B4C6DD;
+}
+
+[data-theme="dark"] .morphic-navbar .nav-tab-btn:hover {
+    color: #EAF4FF;
+    background: rgba(102, 171, 255, 0.12);
+}
+
+[data-theme="dark"] .morphic-navbar .nav-tab-btn.active {
+    color: #F8FBFF !important;
+    background: linear-gradient(135deg, #2866A8, #3885D5);
+    box-shadow: 0 6px 18px rgba(28, 102, 181, 0.32), 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+}
+
+[data-theme="dark"] .morphic-navbar .morphic-theme-toggle,
+[data-theme="dark"] .morphic-navbar .user-desk-badge {
+    background: rgba(10, 26, 49, 0.78);
+    border-color: rgba(143, 190, 245, 0.2);
+    color: var(--text-primary);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+[data-theme="dark"] .desk-table th {
+    background: rgba(92, 155, 224, 0.1);
+}
+
+[data-theme="dark"] .desk-table tr:hover,
+[data-theme="dark"] .morphic-table tr:hover {
+    background: rgba(92, 155, 224, 0.08);
+}
+
+[data-theme="dark"] option {
+    color: var(--text-primary);
+    background: #0B1D36;
+}
+
+.desk-workspace {
+    margin-bottom: 7rem;
+}
+
+.morphic-page-container {
+    animation: page-arrive 560ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.morphic-page-body > .flash-alert {
+    animation: page-arrive 360ms ease-out both;
+}
+
+.simple-event-card {
+    animation: page-arrive 520ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.simple-event-card:nth-child(2) { animation-delay: 50ms; }
+.simple-event-card:nth-child(3) { animation-delay: 100ms; }
+.simple-event-card:nth-child(4) { animation-delay: 150ms; }
+
+@keyframes page-arrive {
+    from { opacity: 0; transform: translate3d(0, 12px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (max-width: 840px) {
+    .morphic-navbar {
+        flex-direction: row;
+        align-items: center;
+        padding: 0.35rem 0;
+    }
+
+    .morphic-navbar .nav-shell {
+        flex: initial;
+    }
+
+    .nav-user-actions {
+        gap: 0.45rem;
+    }
+
+    .user-name-text,
+    .brand-name-sub {
+        display: none;
+    }
+
+    .user-desk-badge {
+        gap: 0.4rem;
+        padding: 0.25rem 0.45rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .morphic-navbar {
+        width: calc(100% - 1.25rem);
+        margin-top: 0.55rem;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .rgcet-logo-img {
+        width: 34px;
+        height: 34px;
+    }
+
+    .brand-name-main {
+        font-size: 0.92rem;
+    }
+
+    .nav-user-actions .morphic-btn {
+        padding: 0.42rem 0.62rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .nav-user-actions {
+        margin-left: auto;
+    }
+
+    .user-desk-badge .morphic-badge {
+        display: none;
+    }
+
+    .user-desk-badge .profile-button,
+    .user-desk-badge .logout-button {
+        padding: 0.28rem 0.42rem;
+        font-size: 0.7rem;
+    }
+
+    .morphic-navbar .nav-shell {
+        max-width: calc(100vw - 1rem);
+        bottom: max(0.55rem, env(safe-area-inset-bottom));
+    }
+
+    .morphic-navbar .nav-links {
+        padding: 0.35rem;
+        gap: 0.12rem;
+    }
+
+    .morphic-navbar .nav-tab-btn {
+        padding: 0.58rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .desk-workspace {
+        padding: 0 0.65rem;
+        margin-top: 1rem;
+        margin-bottom: 6rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
