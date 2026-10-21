@@ -567,7 +567,11 @@ def api_calendar_events():
     try:
         with db.cursor() as cursor:
             cursor.execute("""
-                SELECT e.id, e.title, e.category, e.event_date, e.start_time, e.end_time, e.fee,
+                SELECT e.id, e.title, e.description, e.category,
+                       DATE_FORMAT(e.event_date, '%Y-%m-%d') AS event_date,
+                       TIME_FORMAT(e.start_time, '%H:%i:%s') AS start_time,
+                       TIME_FORMAT(e.end_time, '%H:%i:%s') AS end_time,
+                       e.fee,
                        v.name as venue_name, c.name as club_name
                 FROM events e
                 LEFT JOIN venues v ON e.venue_id = v.id
@@ -597,6 +601,7 @@ def api_calendar_events():
                     'color': colors.get(ev['category'], '#1E3A8A'),
                     'url': url_for('event_details', event_id=ev['id']),
                     'extendedProps': {
+                        'description': ev['description'],
                         'venue': ev['venue_name'] or 'Campus',
                         'club': ev['club_name'] or 'Campus Events',
                         'category': ev['category']
