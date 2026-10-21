@@ -71,6 +71,35 @@
     font-weight: 700 !important;
     font-size: 0.85rem !important;
 }
+.calendar-day-events {
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    background: var(--glass-surface);
+}
+.calendar-day-events h2 {
+    margin-bottom: 0.85rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+.calendar-day-event {
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--glass-border);
+}
+.calendar-day-event:first-child {
+    border-top: 0;
+}
+.calendar-day-event a {
+    color: var(--rgcet-royal);
+    font-weight: 700;
+    text-decoration: none;
+}
+.calendar-day-event p {
+    margin-top: 0.35rem;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+}
 </style>
 {% endblock %}
 
@@ -105,6 +134,10 @@
 
 <div class="morphic-card" style="padding: 2rem;">
     <div id="desk-calendar-view"></div>
+    <section id="calendar-day-events" class="calendar-day-events" aria-live="polite" aria-atomic="true">
+        <h2 id="calendar-day-title">Events on selected date</h2>
+        <div id="calendar-day-event-list"></div>
+    </section>
 </div>
 {% endblock %}
 
@@ -114,6 +147,65 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('desk-calendar-view');
     if (!calendarEl) return;
 
+    var selectedDate = null;
+    var dayTitle = document.getElementById('calendar-day-title');
+    var dayEventList = document.getElementById('calendar-day-event-list');
+    var dateFormatter = new Intl.DateTimeFormat(undefined, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    function getLocalDateString(date) {
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        return date.getFullYear() + '-' + month + '-' + day;
+    }
+
+    function renderDayEvents(dateStr, events) {
+        var parts = dateStr.split('-').map(Number);
+        var selectedDay = new Date(parts[0], parts[1] - 1, parts[2]);
+        dayTitle.textContent = 'Events on ' + dateFormatter.format(selectedDay);
+        dayEventList.replaceChildren();
+
+        if (events.length === 0) {
+            var emptyMessage = document.createElement('p');
+            emptyMessage.textContent = 'No events scheduled for this date.';
+            dayEventList.appendChild(emptyMessage);
+            return;
+        }
+
+        events.forEach(function(event) {
+            var item = document.createElement('article');
+            item.className = 'calendar-day-event';
+
+            var link = document.createElement('a');
+            link.href = event.url;
+            link.textContent = event.title;
+            item.appendChild(link);
+
+            var details = document.createElement('p');
+            var startTime = event.start
+                ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(event.start)
+                : '';
+            details.textContent = [
+                startTime,
+                event.extendedProps.venue,
+                event.extendedProps.category
+            ].filter(Boolean).join(' · ');
+            item.appendChild(details);
+
+            if (event.extendedProps.description) {
+                var message = document.createElement('p');
+                message.textContent = event.extendedProps.description;
+                item.appendChild(message);
+            }
+
+            dayEventList.appendChild(item);
+        });
+    }
+
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         headerToolbar: {
@@ -122,6 +214,20 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 'dayGridMonth,timeGridWeek,listMonth'
         },
         events: '/api/calendar-events',
+        dateClick: function(info) {
+            selectedDate = info.dateStr.slice(0, 10);
+            renderDayEvents(selectedDate, calendar.getEvents().filter(function(event) {
+                return event.startStr.slice(0, 10) === selectedDate;
+            }));
+        },
+        eventsSet: function(events) {
+            if (selectedDate === null) {
+                selectedDate = getLocalDateString(new Date());
+            }
+            renderDayEvents(selectedDate, events.filter(function(event) {
+                return event.startStr.slice(0, 10) === selectedDate;
+            }));
+        },
         eventClick: function(info) {
             if (info.event.url) {
                 info.jsEvent.preventDefault();
