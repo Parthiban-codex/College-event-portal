@@ -27,6 +27,11 @@
     <div>
         <span class="rubber-stamp stamp-attended" style="font-size: 0.8rem;">EVENT ID #EVT-{{ event.id }}</span>
     </div>
+    {% if event.team_size > 1 %}
+        <p style="font-size: 0.82rem; color: var(--ink-pencil); margin-top: 0.5rem;">
+            👥 Team registration: {{ event.team_size }} students total, including the registering student.
+        </p>
+    {% endif %}
 </div>
 
 <!-- Event Banner (Styled like a photo pinned to the notebook) -->
@@ -157,7 +162,7 @@
                     <strong style="color: var(--ink-black);">{{ event.start_time|timeformat }}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-                    <span style="color: var(--ink-pencil);">👥 Seats Enrolled</span>
+                    <span style="color: var(--ink-pencil);">👥 {% if event.team_size > 1 %}Teams Registered{% else %}Seats Enrolled{% endif %}</span>
                     <strong style="color: var(--ink-black);">{{ event.registered_count or 0 }} / {{ event.capacity }}</strong>
                 </div>
             </div>
@@ -204,6 +209,21 @@
                 {% elif event.fee == 0 %}
                     <!-- Free Pass 1-Click Form -->
                     <form action="{{ url_for('register_event', event_id=event.id) }}" method="POST">
+                        {% if event.team_size > 1 %}
+                            <div style="margin-bottom: 1rem;">
+                                <h3 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.6rem;">Team members ({{ event.team_size - 1 }} additional students)</h3>
+                                {% for member_number in range(2, event.team_size + 1) %}
+                                    <div class="form-group">
+                                        <label class="form-label">Member {{ member_number }} name <span style="color: red;">*</span></label>
+                                        <input type="text" name="team_member_name" class="form-input" maxlength="100" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Member {{ member_number }} department <span style="color: red;">*</span></label>
+                                        <input type="text" name="team_member_department" class="form-input" maxlength="100" required>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                         <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%; padding: 0.8rem 1rem; font-size: 1rem;">
                             🎟️ Claim Free Pass Now
                         </button>
@@ -258,6 +278,21 @@
         </div>
 
         <form action="{{ url_for('register_event', event_id=event.id) }}" method="POST" enctype="multipart/form-data">
+            {% if event.team_size > 1 %}
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.6rem;">Team members ({{ event.team_size - 1 }} additional students)</h4>
+                    {% for member_number in range(2, event.team_size + 1) %}
+                        <div class="form-group">
+                            <label class="form-label">Member {{ member_number }} name <span style="color: red;">*</span></label>
+                            <input type="text" name="team_member_name" class="form-input" maxlength="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Member {{ member_number }} department <span style="color: red;">*</span></label>
+                            <input type="text" name="team_member_department" class="form-input" maxlength="100" required>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             <div class="form-group">
                 <label class="form-label">UPI / Bank 12-Digit Reference No. <span style="color: red;">*</span></label>
                 <input type="text" name="payment_ref_no" class="form-input" placeholder="e.g. 429108927192" required>

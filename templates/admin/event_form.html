@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}{% if event %}Edit Event{% else %}Publish Event Directly{% endif %} | Central Administration{% endblock %}
+{% block title %}{% if event %}Edit Event{% else %}Publish Event Directly{% endif %} | {% if is_club_edit %}Club Faculty{% else %}Central Administration{% endif %}{% endblock %}
 
 {% block content %}
 <div style="max-width: 800px; margin: 1.5rem auto;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <div>
             <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: var(--rgcet-navy);">
-                {% if event %}Edit Campus Event{% else %}Publish Event Directly (Central Admin){% endif %}
+                {% if event %}{% if is_club_edit %}Edit Club Event{% else %}Edit Campus Event{% endif %}{% else %}Publish Event Directly (Central Admin){% endif %}
             </h1>
             <p class="hand-note" style="font-size: 1.25rem; color: var(--ink-pencil);">
-                ~ Admin created events are published immediately to the Homepage & Calendar without approvals
+                {% if is_club_edit %}~ Update your club event details; its current approval status will remain unchanged{% else %}~ Admin created events are published immediately to the Homepage & Calendar without approvals{% endif %}
             </p>
         </div>
-        <a href="{{ url_for('admin_events') }}" class="tactile-btn">
-            <span>🔙</span> Manage Events
+        <a href="{{ url_for('club_events') if is_club_edit else url_for('admin_events') }}" class="tactile-btn">
+            <span>🔙</span> {% if is_club_edit %}Club Events{% else %}Manage Events{% endif %}
         </a>
     </div>
 
@@ -29,6 +29,7 @@
                     <input type="text" name="title" class="form-input" placeholder="e.g. 24-Hour AI & Web3 Hackathon" value="{{ event.title if event else '' }}" required>
                 </div>
 
+                {% if not is_club_edit %}
                 <div class="form-group">
                     <label class="form-label">Host Club / Department Association</label>
                     <select name="club_id" class="form-select">
@@ -38,6 +39,7 @@
                         {% endfor %}
                     </select>
                 </div>
+                {% endif %}
 
                 <div class="form-group">
                     <label class="form-label">Event Category <span style="color: red;">*</span></label>
@@ -83,8 +85,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Capacity (Max Passes) <span style="color: red;">*</span></label>
+                    <label class="form-label">Registration Capacity (individuals or teams) <span style="color: red;">*</span></label>
                     <input type="number" name="capacity" class="form-input" min="5" max="3000" value="{{ event.capacity if event else 100 }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Total Team Members <small>(including the registering student; 1 = individual)</small></label>
+                    <input type="number" name="team_size" class="form-input" min="1" max="20" value="{{ event.team_size if event else 1 }}" required>
                 </div>
 
                 <div class="form-group">
@@ -105,7 +112,7 @@
                     {% endif %}
                 </div>
 
-                {% if event %}
+                {% if event and not is_club_edit %}
                     <div class="form-group">
                         <label class="form-label">Event Status</label>
                         <select name="status" class="form-select">

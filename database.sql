@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS `events` (
     `start_time` TIME NOT NULL,
     `end_time` TIME NOT NULL,
     `capacity` INT NOT NULL DEFAULT 50,
+    `team_size` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
     `fee` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `banner_image` VARCHAR(255) NULL,
     `payment_qr_image` VARCHAR(255) NULL,
@@ -130,6 +131,17 @@ CREATE TABLE IF NOT EXISTS `registrations` (
     FOREIGN KEY (`event_id`) REFERENCES `events`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`attended_by_member_id`) REFERENCES `club_members`(`id`) ON DELETE SET NULL,
     UNIQUE KEY `unique_student_event` (`student_id`, `event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 8a. Additional team members for a single student registration
+CREATE TABLE IF NOT EXISTS `registration_team_members` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `registration_id` INT NOT NULL,
+    `member_number` SMALLINT UNSIGNED NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+    `department` VARCHAR(100) NOT NULL,
+    FOREIGN KEY (`registration_id`) REFERENCES `registrations`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `unique_registration_team_member` (`registration_id`, `member_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 9. Announcements / Notice Board Table

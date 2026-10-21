@@ -69,6 +69,30 @@ def generate_payment_qr(upi_id, event_title):
     img.save(filepath)
     return filename
 
+def load_registration_team_members(cursor, participants):
+    """Attach additional team member names and departments to each registration."""
+    for participant in participants:
+        participant['team_members'] = []
+
+    registration_ids = [participant['id'] for participant in participants]
+    if not registration_ids:
+        return
+
+    placeholders = ', '.join(['%s'] * len(registration_ids))
+    cursor.execute(f"""
+        SELECT registration_id, member_number, name, department
+        FROM registration_team_members
+        WHERE registration_id IN ({placeholders})
+        ORDER BY registration_id, member_number
+    """, registration_ids)
+    team_members_by_registration = {}
+    for member in cursor.fetchall():
+        team_members_by_registration.setdefault(member['registration_id'], []).append(member)
+
+    for participant in participants:
+        participant['team_members'] = team_members_by_registration.get(participant['id'], [])
+
+
 def build_attendance_excel(event, participants):
     """Create a professionally formatted Excel (.xlsx) file using openpyxl."""
     wb = openpyxl.Workbook()
@@ -101,14 +125,19 @@ def build_attendance_excel(event, participants):
     )
 
     # Row 1-2: Attendance Ledger Header
-    ws.merge_cells('A1:K1')
+    team_member_count = max(
+        max(int(event.get('team_size') or 1) - 1, 0),
+        max((len(p.get('team_members', [])) for p in participants), default=0)
+    )
+    last_column = get_column_letter(11 + team_member_count * 2)
+    ws.merge_cells(f'A1:{last_column}1')
     ws['A1'] = "CAMPUS EVENT ATTENDANCE LEDGER"
     ws['A1'].font = title_font
     ws['A1'].fill = navy_fill
     ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 28
 
-    ws.merge_cells('A2:K2')
+    ws.merge_cells(f'A2:{last_column}2')
     ws['A2'] = "Event check-in and verification record"
     ws['A2'].font = sub_font
     ws['A2'].fill = navy_fill
@@ -145,6 +174,8 @@ def build_attendance_excel(event, participants):
         "College Email", "Phone", "Ticket Pass Code", "Payment Status",
         "Attendance Status", "Check-in Timestamp"
     ]
+    for member_number in range(2, team_member_count + 2):
+        headers.extend((f"Team Member {member_number} Name", f"Team Member {member_number} Department"))
     
     for col_idx, header in enumerate(headers, 1):
         cell = ws.cell(row=8, column=col_idx, value=header)
@@ -180,6 +211,11 @@ def build_attendance_excel(event, participants):
         # Attended time
         att_time_str = p['attended_at'].strftime('%Y-%m-%d %I:%M %p') if p.get('attended_at') else 'Not Checked In'
         ws.cell(row=current_row, column=11, value=att_time_str).alignment = Alignment(horizontal="center")
+
+        for idx, member in enumerate(p.get('team_members', [])):
+            name_column = 12 + idx * 2
+            ws.cell(row=current_row, column=name_column, value=member.get('name', ''))
+            ws.cell(row=current_row, column=name_column + 1, value=member.get('department', ''))
 
         # Borders and zebra striping
         for col_idx in range(1, len(headers) + 1):
@@ -869,6 +905,23 @@ def register_event(event_id):
             if event['status'] != 'upcoming':
                 flash('Registration is only open for upcoming active events.', 'danger')
                 return redirect(url_for('event_details', event_id=event_id))
+
+            team_size = int(event.get('team_size') or 1)
+            team_member_names = request.form.getlist('team_member_name')
+            team_member_departments = request.form.getlist('team_member_department')
+            expected_team_members = team_size - 1
+            if len(team_member_names) != expected_team_members or len(team_member_departments) != expected_team_members:
+                flash(f'Enter the name and department for all {expected_team_members} additional team members.', 'warning')
+                return redirect(url_for('event_details', event_id=event_id))
+
+            team_members = []
+            for name, department in zip(team_member_names, team_member_departments):
+                name = name.strip()
+                department = department.strip()
+                if not name or not department or len(name) > 100 or len(department) > 100:
+                    flash('Each team member must have a name and department of 1 to 100 characters.', 'warning')
+                    return redirect(url_for('event_details', event_id=event_id))
+                team_members.append({'name': name, 'department': department})
                 
             cursor.execute("""
                 SELECT COUNT(*) as count FROM registrations 
@@ -909,6 +962,7 @@ def register_event(event_id):
                         receipt_filename = f"rec_{uuid.uuid4().hex[:8]}_{sec_fname}"
                         file.save(os.path.join(Config.RECEIPTS_FOLDER, receipt_filename))
                         
+            db.begin()
             cursor.execute("""
                 INSERT INTO registrations (
                     student_id, event_id, ticket_code, payment_status,
@@ -920,6 +974,15 @@ def register_event(event_id):
             ))
             
             reg_id = cursor.lastrowid
+            if team_members:
+                cursor.executemany("""
+                    INSERT INTO registration_team_members (registration_id, member_number, name, department)
+                    VALUES (%s, %s, %s, %s)
+                """, [
+                    (reg_id, index, member['name'], member['department'])
+                    for index, member in enumerate(team_members, start=2)
+                ])
+            db.commit()
             flash('Event Pass successfully reserved!', 'success')
             return redirect(url_for('view_ticket', registration_id=reg_id))
     finally:
@@ -1323,6 +1386,10 @@ def club_create_event():
                     flash(f'This venue is already reserved for "{conflict["title"]}" during that time. Choose another time or venue.', 'warning')
                     return redirect(url_for('club_create_event'))
                 capacity = int(request.form.get('capacity', 50))
+                team_size = int(request.form.get('team_size', 1))
+                if not 1 <= team_size <= 20:
+                    flash('Total team size must be between 1 and 20 students.', 'warning')
+                    return redirect(url_for('club_create_event'))
                 fee = float(request.form.get('fee', 0.00))
                 upi_id = request.form.get('upi_id', '').strip()
                 attendance_incharge_id = request.form.get('attendance_incharge_member_id') or None
@@ -1356,12 +1423,12 @@ def club_create_event():
                 cursor.execute("""
                     INSERT INTO events (
                         title, category, description, venue_id, event_date,
-                        start_time, end_time, capacity, fee, banner_image,
+                        start_time, end_time, capacity, team_size, fee, banner_image,
                         payment_qr_image, upi_id, club_id, created_by_member_id, attendance_incharge_member_id, status
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     title, category, description, venue_id, event_date,
-                    start_time, end_time, capacity, fee, banner_filename,
+                    start_time, end_time, capacity, team_size, fee, banner_filename,
                     payment_qr_filename, upi_id, club_id, member_id, attendance_incharge_id, initial_status
                 ))
                 db.commit()
@@ -1377,6 +1444,102 @@ def club_create_event():
         db.close()
         
     return render_template('club/event_form.html', venues=venues, attendance_members=attendance_members)
+
+@app.route('/club/events/<int:event_id>/edit', methods=['GET', 'POST'])
+@club_faculty_required
+def club_edit_event(event_id):
+    """Allow a club faculty advisor to edit events owned by their club."""
+    club_id = session['club_id']
+    db = get_db_connection()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("SELECT * FROM events WHERE id = %s AND club_id = %s", (event_id, club_id))
+            event = cursor.fetchone()
+            if not event:
+                flash('Event not found in your club.', 'danger')
+                return redirect(url_for('club_events'))
+
+            if request.method == 'POST':
+                title = request.form.get('title', '').strip()
+                category = request.form.get('category', '').strip()
+                if category == '__custom__':
+                    category = request.form.get('custom_category', '').strip()
+                if not category or len(category) > 50:
+                    flash('Enter an event category of 1 to 50 characters.', 'warning')
+                    return redirect(url_for('club_edit_event', event_id=event_id))
+
+                description = request.form.get('description', '').strip()
+                venue_id = request.form.get('venue_id', type=int)
+                event_date = request.form.get('event_date', '')
+                start_time = request.form.get('start_time', '')
+                end_time = request.form.get('end_time', '')
+                capacity = request.form.get('capacity', type=int)
+                team_size = request.form.get('team_size', type=int)
+                fee = request.form.get('fee', type=float)
+                upi_id = request.form.get('upi_id', '').strip()
+
+                if not title or not description or not venue_id or not event_date or not start_time or not end_time:
+                    flash('Complete all required event details.', 'warning')
+                    return redirect(url_for('club_edit_event', event_id=event_id))
+                if end_time <= start_time:
+                    flash('Event end time must be later than its start time.', 'warning')
+                    return redirect(url_for('club_edit_event', event_id=event_id))
+                if capacity is None or capacity < 1 or team_size is None or not 1 <= team_size <= 20 or fee is None or fee < 0:
+                    flash('Enter valid capacity, team size, and registration fee values.', 'warning')
+                    return redirect(url_for('club_edit_event', event_id=event_id))
+
+                conflict = find_venue_conflict(db, cursor, venue_id, event_date, start_time, end_time, event_id)
+                if conflict:
+                    db.rollback()
+                    flash(f'This venue is already reserved for "{conflict["title"]}" during that time. Choose another time or venue.', 'warning')
+                    return redirect(url_for('club_edit_event', event_id=event_id))
+
+                banner_filename = event['banner_image']
+                file = request.files.get('banner')
+                if file and file.filename and allowed_file(file.filename):
+                    sec_fname = secure_filename(file.filename)
+                    banner_filename = f"ban_{uuid.uuid4().hex[:8]}_{sec_fname}"
+                    file.save(os.path.join(Config.BANNERS_FOLDER, banner_filename))
+
+                payment_qr_filename = event['payment_qr_image']
+                if fee > 0 and upi_id and (upi_id != event.get('upi_id') or not payment_qr_filename):
+                    payment_qr_filename = generate_payment_qr(upi_id, title)
+                elif fee == 0 or not upi_id:
+                    payment_qr_filename = None
+
+                cursor.execute("""
+                    UPDATE events SET
+                        title = %s, category = %s, description = %s, venue_id = %s,
+                        event_date = %s, start_time = %s, end_time = %s, capacity = %s,
+                        team_size = %s, fee = %s, banner_image = %s,
+                        payment_qr_image = %s, upi_id = %s
+                    WHERE id = %s AND club_id = %s
+                """, (
+                    title, category, description, venue_id, event_date, start_time,
+                    end_time, capacity, team_size, fee, banner_filename,
+                    payment_qr_filename, upi_id, event_id, club_id
+                ))
+                db.commit()
+                flash(f'Event "{title}" updated successfully.', 'success')
+                return redirect(url_for('club_events'))
+
+            cursor.execute("SELECT * FROM venues ORDER BY name ASC")
+            venues = cursor.fetchall()
+            cursor.execute("SELECT DISTINCT category FROM events WHERE category IS NOT NULL ORDER BY category")
+            event_categories = [row['category'] for row in cursor.fetchall()]
+            categories = ['Hackathon', 'Symposium', 'Workshop', 'Cultural Fest', 'Tech & Robotics', 'Gaming', 'Seminar', 'Sports']
+            categories.extend(category for category in event_categories if category not in categories)
+    finally:
+        db.close()
+
+    return render_template(
+        'admin/event_form.html',
+        event=event,
+        venues=venues,
+        clubs=[],
+        categories=categories,
+        is_club_edit=True
+    )
 
 @app.route('/club/approvals')
 @club_faculty_required
@@ -1634,6 +1797,7 @@ def club_export_attendance(event_id):
                 ORDER BY s.name ASC
             """, (event_id,))
             participants = cursor.fetchall()
+            load_registration_team_members(cursor, participants)
             
             excel_stream = build_attendance_excel(event, participants)
             safe_title = "".join(c for c in event['title'] if c.isalnum() or c in (' ', '_', '-')).rstrip()
@@ -1875,6 +2039,10 @@ def admin_create_event():
                     flash(f'This venue is already reserved for "{conflict["title"]}" during that time. Choose another time or venue.', 'warning')
                     return redirect(url_for('admin_create_event'))
                 capacity = int(request.form.get('capacity', 50))
+                team_size = int(request.form.get('team_size', 1))
+                if not 1 <= team_size <= 20:
+                    flash('Total team size must be between 1 and 20 students.', 'warning')
+                    return redirect(url_for('admin_create_event'))
                 fee = float(request.form.get('fee', 0.00))
                 upi_id = request.form.get('upi_id', '').strip()
                 
@@ -1894,12 +2062,12 @@ def admin_create_event():
                 cursor.execute("""
                     INSERT INTO events (
                         title, category, description, venue_id, event_date,
-                        start_time, end_time, capacity, fee, banner_image,
+                        start_time, end_time, capacity, team_size, fee, banner_image,
                         payment_qr_image, upi_id, club_id, status, created_by, admin_approved_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'upcoming', %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'upcoming', %s, %s)
                 """, (
                     title, category, description, venue_id, event_date,
-                    start_time, end_time, capacity, fee, banner_filename,
+                    start_time, end_time, capacity, team_size, fee, banner_filename,
                     payment_qr_filename, upi_id, club_id, session['user_id'], datetime.now()
                 ))
                 db.commit()
@@ -1947,6 +2115,10 @@ def admin_edit_event(event_id):
                     flash('Event end time must be later than its start time.', 'warning')
                     return redirect(url_for('admin_edit_event', event_id=event_id))
                 capacity = int(request.form.get('capacity', 50))
+                team_size = int(request.form.get('team_size', 1))
+                if not 1 <= team_size <= 20:
+                    flash('Total team size must be between 1 and 20 students.', 'warning')
+                    return redirect(url_for('admin_edit_event', event_id=event_id))
                 fee = float(request.form.get('fee', 0.00))
                 upi_id = request.form.get('upi_id', '').strip()
                 status = request.form.get('status', 'upcoming')
@@ -1973,12 +2145,12 @@ def admin_edit_event(event_id):
                 cursor.execute("""
                     UPDATE events SET
                         title = %s, category = %s, description = %s, venue_id = %s, club_id = %s,
-                        event_date = %s, start_time = %s, end_time = %s, capacity = %s,
+                        event_date = %s, start_time = %s, end_time = %s, capacity = %s, team_size = %s,
                         fee = %s, banner_image = %s, payment_qr_image = %s, upi_id = %s, status = %s
                     WHERE id = %s
                 """, (
                     title, category, description, venue_id, club_id,
-                    event_date, start_time, end_time, capacity,
+                    event_date, start_time, end_time, capacity, team_size,
                     fee, banner_filename, payment_qr_filename, upi_id, status, event_id
                 ))
                 if status not in ('cancelled', 'rejected'):
@@ -2234,6 +2406,7 @@ def admin_export_attendance(event_id):
                 ORDER BY s.name ASC
             """, (event_id,))
             participants = cursor.fetchall()
+            load_registration_team_members(cursor, participants)
             
             excel_stream = build_attendance_excel(event, participants)
             safe_title = "".join(c for c in event['title'] if c.isalnum() or c in (' ', '_', '-')).rstrip()
