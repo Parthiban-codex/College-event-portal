@@ -106,12 +106,6 @@
                             View Pass ➔
                         </a>
 
-                        {% if r.status == 'attended' %}
-                            <a href="{{ url_for('view_certificate', registration_id=r.id) }}" class="tactile-btn tactile-btn-success" style="font-size: 0.85rem; padding: 0.45rem 0.8rem;">
-                                🏆 Certificate
-                            </a>
-                        {% endif %}
-
                         {% if r.status != 'attended' %}
                             <form action="{{ url_for('unregister_event', registration_id=r.id) }}" method="POST" onsubmit="return confirm('Cancel this event pass?');" style="margin: 0;">
                                 <button type="submit" class="tactile-btn tactile-btn-danger" style="font-size: 0.85rem; padding: 0.45rem 0.8rem;">

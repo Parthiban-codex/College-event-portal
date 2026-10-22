@@ -1353,21 +1353,6 @@ button, input, select, textarea {
     background: var(--status-rose-bg);
 }
 
-/* Certificate Frame */
-.cert-frame {
-    background: var(--glass-surface);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-xl);
-    padding: 3rem 2.4rem;
-    text-align: center;
-    box-shadow: var(--morphic-shadow-card);
-    max-width: 840px;
-    margin: 1.5rem auto;
-    position: relative;
-}
-
 @media (max-width: 640px) {
     .ticket-container {
         flex-direction: column;

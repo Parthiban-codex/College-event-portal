@@ -1028,34 +1028,6 @@ def view_ticket(registration_id):
         
     return render_template('ticket.html', ticket=ticket)
 
-@app.route('/certificate/<int:registration_id>')
-@student_required
-def view_certificate(registration_id):
-    student_id = session['user_id']
-    db = get_db_connection()
-    try:
-        with db.cursor() as cursor:
-            cursor.execute("""
-                SELECT r.*, e.title as event_title, e.category as event_category, e.event_date,
-                       c.name as club_name,
-                       COALESCE((SELECT fm.name FROM club_members fm WHERE fm.club_id = e.club_id AND fm.role = 'faculty' AND fm.status = 'active' ORDER BY fm.id DESC LIMIT 1), c.faculty_advisor_name) as faculty_advisor_name,
-                       s.name as student_name, s.roll_number, s.department
-                FROM registrations r
-                JOIN events e ON r.event_id = e.id
-                LEFT JOIN clubs c ON e.club_id = c.id
-                JOIN students s ON r.student_id = s.id
-                WHERE r.id = %s AND r.student_id = %s
-            """, (registration_id, student_id))
-            cert = cursor.fetchone()
-            
-            if not cert or cert['status'] != 'attended':
-                flash('Certificate is only available for attended and verified events.', 'warning')
-                return redirect(url_for('student_dashboard'))
-    finally:
-        db.close()
-        
-    return render_template('certificate.html', cert=cert)
-
 @app.route('/registration/<int:registration_id>/unregister', methods=['POST'])
 @student_required
 def unregister_event(registration_id):
