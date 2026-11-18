@@ -17,14 +17,14 @@
     --rgcet-gold: #F59E0B;
 
     /* Ambient Canvas */
-    --ambient-bg: #F8FAFC;
-    --ambient-gradient: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #F1F5F9 50%, #E2E8F0 100%);
+    --ambient-bg: #F3F6E8;
+    --ambient-gradient: radial-gradient(circle at 50% 0%, #FFFEF3 0%, #F3F6E8 52%, #E7EDDA 100%);
     
     /* Frosted Glassmorphic Surfaces */
-    --glass-surface: rgba(255, 255, 255, 0.82);
-    --glass-surface-hover: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(226, 232, 240, 0.85);
-    --glass-border-subtle: rgba(255, 255, 255, 0.9);
+    --glass-surface: rgba(255, 255, 247, 0.9);
+    --glass-surface-hover: rgba(255, 255, 239, 0.97);
+    --glass-border: rgba(190, 199, 157, 0.72);
+    --glass-border-subtle: rgba(255, 255, 239, 0.95);
     --glass-blur: blur(20px);
     
     /* 2D Morphic Shadows */
@@ -45,7 +45,7 @@
     /* Text & Inks */
     --text-primary: #0F172A;
     --text-secondary: #475569;
-    --text-muted: #94A3B8;
+    --text-muted: #687553;
     --text-inverse: #FFFFFF;
 
     /* Semantic Status Accents */
@@ -70,8 +70,8 @@
     --status-purple-border: rgba(139, 92, 246, 0.25);
 
     /* Form & Controls */
-    --control-bg: rgba(248, 250, 252, 0.85);
-    --control-border: #CBD5E1;
+    --control-bg: rgba(250, 251, 237, 0.92);
+    --control-border: #C4CCAA;
     --control-border-focus: #2563EB;
 
     /* Radii */

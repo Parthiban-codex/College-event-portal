@@ -12,7 +12,12 @@
     color: var(--text-primary);
     --fc-page-bg-color: transparent;
     --fc-border-color: var(--glass-border);
-    --fc-today-bg-color: rgba(37, 99, 235, 0.06);
+    --fc-neutral-bg-color: rgba(233, 239, 211, 0.58);
+    --fc-today-bg-color: rgba(190, 210, 105, 0.2);
+}
+[data-theme="dark"] .fc {
+    --fc-neutral-bg-color: rgba(10, 26, 49, 0.84);
+    --fc-today-bg-color: rgba(37, 99, 235, 0.1);
 }
 .fc-theme-standard td, .fc-theme-standard th {
     border: 1px solid var(--glass-border) !important;
@@ -147,9 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('desk-calendar-view');
     if (!calendarEl) return;
 
+    if (!window.FullCalendar) {
+        calendarEl.textContent = 'The calendar could not be loaded. Please check your connection and refresh the page.';
+        return;
+    }
+
     var selectedDate = null;
     var dayTitle = document.getElementById('calendar-day-title');
     var dayEventList = document.getElementById('calendar-day-event-list');
+    var calendarEventsUrl = {{ url_for('api_calendar_events')|tojson }};
     var dateFormatter = new Intl.DateTimeFormat(undefined, {
         weekday: 'long',
         year: 'numeric',
@@ -213,7 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,listMonth'
         },
-        events: '/api/calendar-events',
+        events: {
+            url: calendarEventsUrl,
+            failure: function() {
+                dayEventList.textContent = 'Events could not be loaded. Please refresh the page to try again.';
+            }
+        },
+        datesSet: function() {
+            selectedDate = getLocalDateString(calendar.getDate());
+            renderDayEvents(selectedDate, calendar.getEvents().filter(function(event) {
+                return event.startStr.slice(0, 10) === selectedDate;
+            }));
+        },
         dateClick: function(info) {
             selectedDate = info.dateStr.slice(0, 10);
             renderDayEvents(selectedDate, calendar.getEvents().filter(function(event) {
