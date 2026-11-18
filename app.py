@@ -1934,6 +1934,24 @@ def admin_dashboard():
         pending_deletions=pending_deletions
     )
 
+@app.route('/admin/scanner')
+@admin_required
+def admin_scanner():
+    """Central admin QR check-in desk."""
+    db = get_db_connection()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, title, event_date
+                FROM events
+                WHERE status IN ('upcoming', 'ongoing')
+                ORDER BY event_date ASC, start_time ASC
+            """)
+            events = cursor.fetchall()
+    finally:
+        db.close()
+    return render_template('admin/scanner.html', events=events)
+
 @app.route('/admin/events')
 @admin_required
 def admin_events():
@@ -2350,6 +2368,104 @@ def admin_participants():
         db.close()
         
     return render_template('admin/participants.html', participants=participants, events=events, selected_event_id=int(event_id) if event_id else None)
+
+@app.route('/api/scan-ticket', methods=['POST'])
+@admin_required
+def api_admin_scan_ticket():
+    """Validate a ticket and record attendance at the central admin gate."""
+    data = request.get_json(silent=True) or {}
+    ticket_code = data.get('ticket_code')
+    if not isinstance(ticket_code, str) or not ticket_code.strip():
+        return jsonify({'success': False, 'message': 'Ticket code is required.'}), 400
+    ticket_code = ticket_code.strip().upper()
+
+    event_id = data.get('event_id')
+    if event_id not in (None, ''):
+        try:
+            event_id = int(event_id)
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'message': 'Invalid event selection.'}), 400
+    else:
+        event_id = None
+
+    db = get_db_connection()
+    try:
+        db.begin()
+        with db.cursor() as cursor:
+            cursor.execute("""
+                SELECT r.id, r.ticket_code, r.status, r.payment_status, r.attended_at,
+                       s.name AS student_name, s.roll_number, s.department,
+                       e.id AS event_id, e.title AS event_title, e.status AS event_status
+                FROM registrations r
+                JOIN students s ON r.student_id = s.id
+                JOIN events e ON r.event_id = e.id
+                WHERE r.ticket_code = %s
+                FOR UPDATE
+            """, (ticket_code,))
+            registration = cursor.fetchone()
+
+            if not registration:
+                db.rollback()
+                return jsonify({'success': False, 'message': 'Invalid pass! Ticket code not found.'}), 404
+
+            if event_id and event_id != registration['event_id']:
+                db.rollback()
+                return jsonify({
+                    'success': False,
+                    'message': f'Ticket belongs to "{registration["event_title"]}", not the selected event.'
+                }), 400
+
+            if registration['status'] == 'attended':
+                attended_at = registration['attended_at']
+                attended_text = attended_at.strftime('%I:%M %p, %b %d') if attended_at else 'Earlier'
+                db.rollback()
+                return jsonify({
+                    'success': False,
+                    'already_attended': True,
+                    'message': f'Already checked in at {attended_text}.',
+                    'student': {
+                        'name': registration['student_name'],
+                        'roll_number': registration['roll_number'],
+                        'department': registration['department'],
+                        'event': registration['event_title']
+                    }
+                })
+
+            if registration['status'] in ('rejected', 'cancelled') or registration['payment_status'] == 'rejected':
+                db.rollback()
+                return jsonify({'success': False, 'message': 'This ticket has been rejected or cancelled.'}), 400
+
+            if registration['payment_status'] == 'pending':
+                db.rollback()
+                return jsonify({'success': False, 'message': 'Payment is still pending for this ticket.'}), 400
+
+            if registration['event_status'] not in ('upcoming', 'ongoing'):
+                db.rollback()
+                return jsonify({'success': False, 'message': 'This event is not open for check-in.'}), 400
+
+            now = datetime.now()
+            cursor.execute("""
+                UPDATE registrations
+                SET status = 'attended', attended_at = %s, attended_by_member_id = NULL
+                WHERE id = %s AND status != 'attended'
+            """, (now, registration['id']))
+            if cursor.rowcount != 1:
+                db.rollback()
+                return jsonify({'success': False, 'message': 'This ticket has already been checked in.'}), 409
+            db.commit()
+            return jsonify({
+                'success': True,
+                'timestamp': now.strftime('%I:%M:%S %p'),
+                'student': {
+                    'name': registration['student_name'],
+                    'roll_number': registration['roll_number'],
+                    'department': registration['department'],
+                    'event': registration['event_title'],
+                    'ticket_code': registration['ticket_code']
+                }
+            })
+    finally:
+        db.close()
 
 @app.route('/admin/participants/export/<int:event_id>')
 @admin_required

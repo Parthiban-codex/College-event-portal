@@ -20,13 +20,14 @@
     </div>
 </div>
 
-<!-- Desk Navigation Divider Tabs (QR Scanner removed from admin as requested) -->
+<!-- Desk Navigation Divider Tabs -->
 <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px dashed var(--card-border); padding-bottom: 1rem;">
     <a href="{{ url_for('admin_dashboard') }}" class="tactile-btn">📊 Overview</a>
     <a href="{{ url_for('admin_events') }}" class="tactile-btn tactile-btn-primary">📋 Manage Events</a>
     <a href="{{ url_for('admin_approvals') }}" class="tactile-btn">📥 Endorsements</a>
     <a href="{{ url_for('admin_deletion_requests') }}" class="tactile-btn">🗑️ Deletion Requests</a>
     <a href="{{ url_for('admin_registrations') }}" class="tactile-btn">💳 Verify Payments</a>
+    <a href="{{ url_for('admin_scanner') }}" class="tactile-btn">📷 QR Scanner</a>
     <a href="{{ url_for('admin_participants') }}" class="tactile-btn">👥 Attendees & Excel</a>
     <a href="{{ url_for('admin_announcements') }}" class="tactile-btn">📢 Notices</a>
     <a href="{{ url_for('admin_venues') }}" class="tactile-btn">🏛️ Venues</a>

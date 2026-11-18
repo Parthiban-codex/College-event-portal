@@ -14,7 +14,7 @@
             <span class="pen-accent-icon">📷</span>
             Live QR Gate Check-in Desk
         </h1>
-        <p class="hand-note" style="margin-top: 4px;">~ Scan student Admit-One passes via webcam, file upload, or ticket code</p>
+        <p class="hand-note" style="margin-top: 4px;">Scan tickets for central admin-hosted events via camera, image upload, or ticket code</p>
     </div>
 
     <div>
@@ -54,6 +54,9 @@
         <div id="qr-reader" style="width: 100%; min-height: 280px; background: #0f172a; border-radius: 8px; overflow: hidden; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
             <span>📷 Camera preview will appear here when started</span>
         </div>
+        <p id="scanner-status" role="status" aria-live="polite" style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Start the camera or enter a ticket code manually.
+        </p>
 
         <!-- Camera Control Buttons -->
         <div style="display: flex; gap: 0.8rem; justify-content: center; margin-bottom: 1.5rem;">
@@ -96,7 +99,7 @@
             </h3>
             <form id="manual-ticket-form">
                 <div class="form-group">
-                    <label class="form-label">Ticket Code (e.g. EVT-2026-XXXX)</label>
+                    <label class="form-label">Ticket Code (e.g. PASS-A1B2C3)</label>
                     <input type="text" id="manual-ticket-code" class="form-input" placeholder="Enter ticket code..." required style="font-family: var(--font-mono); text-transform: uppercase;">
                 </div>
                 <button type="submit" class="tactile-btn tactile-btn-primary" style="width: 100%;">
