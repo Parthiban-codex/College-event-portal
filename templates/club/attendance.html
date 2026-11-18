@@ -70,6 +70,9 @@
         </div>
         
         <div id="qr-reader" style="width: 100%; min-height: 260px; border-radius: var(--radius-sm); overflow: hidden; background: #0F172A; border: 1px solid var(--glass-border);"></div>
+        <p id="camera-scan-status" role="status" aria-live="polite" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 0.6rem;">
+            Start the camera or enter a ticket code manually.
+        </p>
         
         <div style="display: flex; gap: 0.6rem; margin-top: 1rem;">
             <button id="btn-start-camera" class="morphic-btn morphic-btn-primary" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;" onclick="startQrScanner()">
@@ -189,21 +192,32 @@
 
 <script>
 const eventId = {{ event.id }};
+const scanTicketUrl = {{ url_for('api_club_scan_ticket')|tojson }};
 let html5QrCode = null;
+let scannerStarting = false;
+let scanInProgress = false;
+let lastScannedCode = '';
+let lastScanTime = 0;
+
+function setCameraScanStatus(message) {
+    const status = document.getElementById('camera-scan-status');
+    if (status) status.textContent = message;
+}
 
 function verifyTicketApi(ticketCode) {
-    fetch('/api/club/scan-ticket', {
+    return fetch(scanTicketUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ticket_code: ticketCode, event_id: eventId })
     })
-    .then(res => res.json().then(data => ({ status: res.status, body: data })))
-    .then(({ status, body }) => {
+    .then(res => res.json().then(body => ({ ok: res.ok, body })))
+    .then(({ ok, body }) => {
         const box = document.getElementById('scanResultBox');
         const content = document.getElementById('scanResultContent');
         box.style.display = 'block';
 
         if (body.success) {
+            setCameraScanStatus('Pass checked in. Show the next ticket QR code to continue.');
             box.style.background = '#DCFCE7';
             box.style.borderColor = '#86EFAC';
             box.style.color = '#166534';
@@ -236,6 +250,7 @@ function verifyTicketApi(ticketCode) {
                 remCountEl.textContent = Math.max(0, rem - 1);
             }
         } else if (body.already_attended) {
+            setCameraScanStatus('This ticket was already checked in.');
             box.style.background = '#FEF3C7';
             box.style.borderColor = '#FCD34D';
             box.style.color = '#92400E';
@@ -244,14 +259,23 @@ function verifyTicketApi(ticketCode) {
                 <div style="font-size: 0.85rem;">Student: <strong>${body.student.name}</strong> (${body.student.roll_number})</div>
             `;
         } else {
+            setCameraScanStatus(body.message || 'This ticket could not be verified.');
             box.style.background = '#FEE2E2';
             box.style.borderColor = '#FCA5A5';
             box.style.color = '#991B1B';
-            content.innerHTML = `<div style="font-weight: 800;">✕ ${body.message}</div>`;
+            content.textContent = `✕ ${body.message || (ok ? 'Ticket could not be verified.' : 'The server rejected this ticket.')}`;
         }
     })
     .catch(err => {
-        alert("Verification request error: " + err);
+        setCameraScanStatus('Could not connect to the check-in server. Check your connection and try again.');
+        const box = document.getElementById('scanResultBox');
+        const content = document.getElementById('scanResultContent');
+        box.style.display = 'block';
+        box.style.background = '#FEE2E2';
+        box.style.borderColor = '#FCA5A5';
+        box.style.color = '#991B1B';
+        content.textContent = 'Verification request failed. Please check your connection and try again.';
+        console.error('Ticket verification error:', err);
     });
 }
 
@@ -265,29 +289,56 @@ function handleManualCheckin(e) {
 }
 
 function startQrScanner() {
+    if (scannerStarting || html5QrCode && html5QrCode.isScanning) return;
+    if (!window.Html5Qrcode) {
+        setCameraScanStatus('The QR scanner library did not load. Refresh the page or enter the ticket code manually.');
+        return;
+    }
+    if (!window.isSecureContext) {
+        setCameraScanStatus('Camera access requires HTTPS (or localhost). Open this page using a secure connection, or enter the ticket code manually.');
+        return;
+    }
+
+    scannerStarting = true;
     html5QrCode = new Html5Qrcode("qr-reader");
     html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
         (decodedText) => {
-            verifyTicketApi(decodedText.trim());
+            const ticketCode = decodedText.trim();
+            const now = Date.now();
+            if (!ticketCode || scanInProgress || (ticketCode === lastScannedCode && now - lastScanTime < 2500)) return;
+            scanInProgress = true;
+            lastScannedCode = ticketCode;
+            lastScanTime = now;
+            setCameraScanStatus('QR detected. Verifying ticket…');
+            verifyTicketApi(ticketCode).finally(() => {
+                scanInProgress = false;
+            });
         },
-        (errorMessage) => {
-            // scan pass
-        }
+        () => {}
     ).then(() => {
+        scannerStarting = false;
         document.getElementById('btn-start-camera').style.display = 'none';
         document.getElementById('btn-stop-camera').style.display = 'inline-flex';
+        setCameraScanStatus('Camera ready. Center a ticket QR code in the frame.');
     }).catch(err => {
-        alert("Camera access denied or unavailable: " + err);
+        scannerStarting = false;
+        html5QrCode = null;
+        setCameraScanStatus('Could not start the camera. Allow camera permission and use HTTPS, or enter the ticket code manually.');
+        console.error('QR camera startup error:', err);
     });
 }
 
 function stopQrScanner() {
-    if (html5QrCode) {
+    if (html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().then(() => {
             document.getElementById('btn-start-camera').style.display = 'inline-flex';
             document.getElementById('btn-stop-camera').style.display = 'none';
+            setCameraScanStatus('Camera stopped. Start it again or enter a ticket code manually.');
+        }).catch(err => {
+            setCameraScanStatus('Could not stop the camera cleanly. Refresh the page if it remains active.');
+            console.error('QR camera shutdown error:', err);
         });
     }
 }
